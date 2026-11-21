@@ -13,6 +13,23 @@ namespace WeirdLand.Core.Duels
             Duel.DrawCards(enemy, 2, rng);
             var drawn = new List<CardInstance>(enemy.Hand);
             enemy.Hand.Clear();
+
+            if (d.Kind == DuelKind.Field && !d.UserIsAttacker && d.EnemyPassTargets.Count > 0)
+            {
+                double chance = DuelRules.PassChance(enemy, user);
+                if (chance >= DuelRules.EnemyPassThreshold)
+                {
+                    PlayerDef target = null;
+                    int bestSum = int.MinValue;
+                    foreach (var t in d.EnemyPassTargets)
+                    {
+                        int sum = t.Stats.Dribbling + t.Stats.Shooting;
+                        if (sum > bestSum) { bestSum = sum; target = t; }
+                    }
+                    enemy.Discard.AddRange(drawn);
+                    return new EnemyIntent { PassTarget = target, PassChance = chance };
+                }
+            }
             if (drawn.Count == 0) return new EnemyIntent();
 
             CardInstance best = null;

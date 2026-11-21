@@ -22,9 +22,11 @@ namespace WeirdLand.Core.Duels
         public int MaxTurns { get; }
         public EnemyIntent Intent { get; private set; }
         public DuelOutcome? Outcome { get; private set; }
-        public PlayerDef PassTarget => null;
+        public PlayerDef PassTarget { get; private set; }
+        public IReadOnlyList<PlayerDef> EnemyPassTargets => _setup.EnemyPassTargets;
         public IReadOnlyList<PlayerDef> UserPassTargets => _setup.UserPassTargets;
-        public bool CanPass => false;
+        public bool CanPass => Kind == DuelKind.Field && UserIsAttacker && _begun && !Outcome.HasValue
+            && User.Energy >= DuelRules.PassCost && UserPassTargets.Count > 0;
 
         public Duel(DuelSetup setup, Rng rng)
         {
@@ -37,7 +39,7 @@ namespace WeirdLand.Core.Duels
             Enemy = new Combatant { Player = setup.EnemyPlayer, IsUser = false, PowerScalePercent = setup.EnemyPowerScalePercent };
         }
 
-        public double PassChance() => 0;
+        public double PassChance() => DuelRules.PassChance(User, Enemy);
 
         public int IncomingDamage()
         {
@@ -90,7 +92,27 @@ namespace WeirdLand.Core.Duels
             return _ev;
         }
 
-        public IReadOnlyList<GameEvent> Pass(string targetId) => throw new NotImplementedException();
+        public IReadOnlyList<GameEvent> Pass(string targetId)
+        {
+            Guard();
+            if (!CanPass) throw new InvalidOperationException("Pass not allowed.");
+            PlayerDef target = null;
+            foreach (var p in UserPassTargets) if (p.Id == targetId) { target = p; break; }
+            if (target == null) throw new InvalidOperationException("Unknown pass target.");
+            _ev = new List<GameEvent>();
+            User.Energy -= DuelRules.PassCost;
+            _ev.Add(new EnergyChanged(true, User.Energy));
+            ResolvePass(true, target, PassChance());
+            return _ev;
+        }
+
+        private void ResolvePass(bool byUser, PlayerDef target, double chance)
+        {
+            bool ok = _rng.Chance(chance);
+            _ev.Add(new PassAttempted(byUser, target.Id, chance, ok));
+            if (ok) PassTarget = target;
+            Finish(ok ? DuelOutcome.PassSucceeded : DuelOutcome.PassFailed);
+        }
 
         public IReadOnlyList<GameEvent> EndTurn()
         {
@@ -99,6 +121,15 @@ namespace WeirdLand.Core.Duels
             User.Discard.AddRange(User.Hand);
             User.Hand.Clear();
             Enemy.Block = 0;
+
+            if (Intent != null && Intent.PassTarget != null)
+            {
+                var t = Intent.PassTarget;
+                double chance = Intent.PassChance;
+                Intent = null;
+                ResolvePass(false, t, chance);
+                return _ev;
+            }
 
             var card = Intent == null ? null : Intent.Card;
             if (card != null)

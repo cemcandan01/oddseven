@@ -12,6 +12,17 @@ namespace WeirdLand.Core.Duels
         public const double TiredMult = 0.75;
         public const double NonCornerShotMult = 0.5;
         public const double UncoveredCornerMult = 2;
+        public const double EnemyPassThreshold = 0.6;
+        public const int PassCost = 1;
+
+        public static double PassChance(Combatant carrier, Combatant defender)
+        {
+            double p = 0.30 + 0.06 * carrier.Player.Stats.Passing
+                + 0.30 * (1.0 - (double)defender.Hp / defender.MaxHp)
+                + (defender.StatusOf(StatusId.Unbalanced) > 0 ? 0.15 : 0)
+                - 0.25 * (1.0 - (double)carrier.Hp / carrier.MaxHp);
+            return System.Math.Min(0.95, System.Math.Max(0.05, p));
+        }
 
         public static int MaxTurns(DuelKind kind)
         {
