@@ -1,0 +1,742 @@
+{
+  "schemaVersion": 1,
+  "teams": [
+    {
+      "id": "mavi",
+      "name": "Mavi",
+      "style": "Dengeli, orta saha hakimiyeti",
+      "tier": 1,
+      "players": [
+        {
+          "id": "mavi_gk",
+          "name": "Kaleci Kerem",
+          "slot": "GK",
+          "stats": {
+            "speed": 2,
+            "power": 2,
+            "passing": 3,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 3,
+            "aerial": 3,
+            "near": 3,
+            "far": 3
+          },
+          "deck": [
+            "saga_yat",
+            "sola_yat",
+            "refleks",
+            "uzanis",
+            "kafa_yumruk",
+            "derin_nefes"
+          ]
+        },
+        {
+          "id": "mavi_lb",
+          "name": "Sol Bek Sinan",
+          "slot": "LB",
+          "stats": {
+            "speed": 2,
+            "power": 4,
+            "passing": 3,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 4,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "kayarak_mudahale",
+            "yapis",
+            "topu_sakla",
+            "pas_yolunu_kapat",
+            "hava_hakimi",
+            "uzun_top",
+            "kafa_vurusu"
+          ]
+        },
+        {
+          "id": "mavi_rb",
+          "name": "Sağ Bek Şaban",
+          "slot": "RB",
+          "stats": {
+            "speed": 3,
+            "power": 4,
+            "passing": 2,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 4,
+            "aerial": 2,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "kayarak_mudahale",
+            "yapis",
+            "topu_sakla",
+            "pas_yolunu_kapat",
+            "hava_hakimi",
+            "uzun_top",
+            "kafa_vurusu"
+          ]
+        },
+        {
+          "id": "mavi_cm",
+          "name": "Orta Saha Oktay",
+          "slot": "CM",
+          "stats": {
+            "speed": 3,
+            "power": 3,
+            "passing": 5,
+            "dribbling": 4,
+            "shooting": 2,
+            "defending": 3,
+            "aerial": 2,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "topu_sakla",
+            "kisa_pas",
+            "calim",
+            "yapis",
+            "pas_yolunu_kapat",
+            "orta_saha_kirici",
+            "sert_girisim"
+          ]
+        },
+        {
+          "id": "mavi_lw",
+          "name": "Sol Kanat Selim",
+          "slot": "LW",
+          "stats": {
+            "speed": 5,
+            "power": 2,
+            "passing": 3,
+            "dribbling": 4,
+            "shooting": 3,
+            "defending": 1,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "calim",
+            "ortala",
+            "kanat_kosusu",
+            "yakin_kose",
+            "geri_don_savun",
+            "topu_sakla",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "mavi_rw",
+          "name": "Sağ Kanat Şahin",
+          "slot": "RW",
+          "stats": {
+            "speed": 4,
+            "power": 2,
+            "passing": 4,
+            "dribbling": 3,
+            "shooting": 3,
+            "defending": 2,
+            "aerial": 2,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "calim",
+            "ortala",
+            "kanat_kosusu",
+            "yakin_kose",
+            "geri_don_savun",
+            "topu_sakla",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "mavi_st",
+          "name": "Santrafor Sedat",
+          "slot": "ST",
+          "stats": {
+            "speed": 3,
+            "power": 5,
+            "passing": 2,
+            "dribbling": 3,
+            "shooting": 4,
+            "defending": 1,
+            "aerial": 4,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "yakin_kose",
+            "uzak_kose",
+            "calim",
+            "sert_sut",
+            "sirtini_koy",
+            "topu_sakla",
+            "kolunu_uzat"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kirmizi",
+      "name": "Kırmızı",
+      "style": "Kanat ağırlıklı, sert savunma",
+      "tier": 1,
+      "players": [
+        {
+          "id": "kirmizi_gk",
+          "name": "Kaleci Kadir",
+          "slot": "GK",
+          "stats": {
+            "speed": 2,
+            "power": 3,
+            "passing": 3,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 3,
+            "aerial": 3,
+            "near": 3,
+            "far": 3
+          },
+          "deck": [
+            "saga_yat",
+            "sola_yat",
+            "refleks",
+            "uzanis",
+            "kafa_yumruk",
+            "derin_nefes"
+          ]
+        },
+        {
+          "id": "kirmizi_lb",
+          "name": "Sol Bek Soner",
+          "slot": "LB",
+          "stats": {
+            "speed": 3,
+            "power": 4,
+            "passing": 2,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 4,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "kayarak_mudahale",
+            "yapis",
+            "topu_sakla",
+            "pas_yolunu_kapat",
+            "hava_hakimi",
+            "uzun_top",
+            "kafa_vurusu"
+          ]
+        },
+        {
+          "id": "kirmizi_rb",
+          "name": "Sağ Bek Sabri",
+          "slot": "RB",
+          "stats": {
+            "speed": 2,
+            "power": 3,
+            "passing": 3,
+            "dribbling": 2,
+            "shooting": 1,
+            "defending": 5,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "kayarak_mudahale",
+            "yapis",
+            "topu_sakla",
+            "pas_yolunu_kapat",
+            "hava_hakimi",
+            "uzun_top",
+            "kafa_vurusu"
+          ]
+        },
+        {
+          "id": "kirmizi_cm",
+          "name": "Orta Saha Orhan",
+          "slot": "CM",
+          "stats": {
+            "speed": 3,
+            "power": 3,
+            "passing": 4,
+            "dribbling": 4,
+            "shooting": 3,
+            "defending": 3,
+            "aerial": 2,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "topu_sakla",
+            "kisa_pas",
+            "calim",
+            "yapis",
+            "pas_yolunu_kapat",
+            "orta_saha_kirici",
+            "sert_girisim"
+          ]
+        },
+        {
+          "id": "kirmizi_lw",
+          "name": "Sol Kanat Serkan",
+          "slot": "LW",
+          "stats": {
+            "speed": 4,
+            "power": 2,
+            "passing": 3,
+            "dribbling": 5,
+            "shooting": 3,
+            "defending": 1,
+            "aerial": 2,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "calim",
+            "ortala",
+            "kanat_kosusu",
+            "yakin_kose",
+            "geri_don_savun",
+            "topu_sakla",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "kirmizi_rw",
+          "name": "Sağ Kanat Şükrü",
+          "slot": "RW",
+          "stats": {
+            "speed": 5,
+            "power": 2,
+            "passing": 3,
+            "dribbling": 3,
+            "shooting": 2,
+            "defending": 2,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "calim",
+            "ortala",
+            "kanat_kosusu",
+            "yakin_kose",
+            "geri_don_savun",
+            "topu_sakla",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "kirmizi_st",
+          "name": "Santrafor Sercan",
+          "slot": "ST",
+          "stats": {
+            "speed": 3,
+            "power": 4,
+            "passing": 2,
+            "dribbling": 3,
+            "shooting": 5,
+            "defending": 1,
+            "aerial": 4,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "yakin_kose",
+            "uzak_kose",
+            "calim",
+            "sert_sut",
+            "sirtini_koy",
+            "topu_sakla",
+            "kolunu_uzat"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "martilar",
+      "name": "Kafadar Martılar",
+      "style": "Hava topu ve hızlı kanatlar, çığlık atan taraftar",
+      "tier": 2,
+      "players": [
+        {
+          "id": "martilar_gk",
+          "name": "Kaleci Mestan",
+          "slot": "GK",
+          "stats": {
+            "speed": 3,
+            "power": 3,
+            "passing": 4,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 4,
+            "aerial": 4,
+            "near": 3,
+            "far": 4
+          },
+          "deck": [
+            "saga_yat",
+            "sola_yat",
+            "cik_ve_kap",
+            "refleks",
+            "uzanis",
+            "kafa_yumruk",
+            "derin_nefes"
+          ]
+        },
+        {
+          "id": "martilar_lb",
+          "name": "Sol Bek Mümin",
+          "slot": "LB",
+          "stats": {
+            "speed": 3,
+            "power": 5,
+            "passing": 4,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 5,
+            "aerial": 4,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "kayarak_mudahale",
+            "yapis",
+            "duvar_ol",
+            "sert_mudahale",
+            "hava_hakimi",
+            "uzun_top",
+            "kafa_vurusu"
+          ]
+        },
+        {
+          "id": "martilar_rb",
+          "name": "Sağ Bek Mazlum",
+          "slot": "RB",
+          "stats": {
+            "speed": 4,
+            "power": 5,
+            "passing": 3,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 5,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "kayarak_mudahale",
+            "yapis",
+            "duvar_ol",
+            "sert_mudahale",
+            "hava_hakimi",
+            "uzun_top",
+            "kafa_vurusu"
+          ]
+        },
+        {
+          "id": "martilar_cm",
+          "name": "Orta Saha Mahir",
+          "slot": "CM",
+          "stats": {
+            "speed": 4,
+            "power": 4,
+            "passing": 6,
+            "dribbling": 5,
+            "shooting": 3,
+            "defending": 4,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "topu_sakla",
+            "kisa_pas",
+            "ara_pasi",
+            "oyun_kurucu",
+            "yapis",
+            "orta_saha_kirici",
+            "sert_girisim"
+          ]
+        },
+        {
+          "id": "martilar_lw",
+          "name": "Sol Kanat Mert",
+          "slot": "LW",
+          "stats": {
+            "speed": 6,
+            "power": 3,
+            "passing": 4,
+            "dribbling": 5,
+            "shooting": 4,
+            "defending": 1,
+            "aerial": 4,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "calim",
+            "ici_kes",
+            "kanat_kosusu",
+            "yakin_kose",
+            "ust_kose",
+            "geri_don_savun",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "martilar_rw",
+          "name": "Sağ Kanat Murat",
+          "slot": "RW",
+          "stats": {
+            "speed": 5,
+            "power": 3,
+            "passing": 5,
+            "dribbling": 4,
+            "shooting": 4,
+            "defending": 3,
+            "aerial": 3,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "calim",
+            "ici_kes",
+            "kanat_kosusu",
+            "yakin_kose",
+            "ust_kose",
+            "geri_don_savun",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "martilar_st",
+          "name": "Santrafor Mesut",
+          "slot": "ST",
+          "stats": {
+            "speed": 4,
+            "power": 6,
+            "passing": 3,
+            "dribbling": 4,
+            "shooting": 5,
+            "defending": 1,
+            "aerial": 5,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "yakin_kose",
+            "uzak_kose",
+            "ust_kose",
+            "falsolu_sut",
+            "calim",
+            "sirtini_koy",
+            "kolunu_uzat"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ahtapotlar",
+      "name": "Efsane Ahtapotlar",
+      "style": "Kale önünde sekiz kollu duvar, ölümcül santrafor",
+      "tier": 3,
+      "players": [
+        {
+          "id": "ahtapotlar_gk",
+          "name": "Kaleci Ahtapot Ali",
+          "slot": "GK",
+          "stats": {
+            "speed": 4,
+            "power": 5,
+            "passing": 5,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 5,
+            "aerial": 5,
+            "near": 4,
+            "far": 4
+          },
+          "deck": [
+            "saga_yat",
+            "sola_yat",
+            "cik_ve_kap",
+            "ahtapot_eller",
+            "refleks",
+            "uzanis",
+            "kafa_yumruk",
+            "derin_nefes"
+          ]
+        },
+        {
+          "id": "ahtapotlar_lb",
+          "name": "Sol Bek Tentakül Tarık",
+          "slot": "LB",
+          "stats": {
+            "speed": 5,
+            "power": 6,
+            "passing": 4,
+            "dribbling": 1,
+            "shooting": 1,
+            "defending": 6,
+            "aerial": 5,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "sert_mudahale",
+            "duvar_ol",
+            "demir_savunma",
+            "kontra_atak",
+            "yapis",
+            "hava_hakimi",
+            "kafa_vurusu",
+            "uzun_top"
+          ]
+        },
+        {
+          "id": "ahtapotlar_rb",
+          "name": "Sağ Bek Mürekkep Mehmet",
+          "slot": "RB",
+          "stats": {
+            "speed": 4,
+            "power": 5,
+            "passing": 5,
+            "dribbling": 4,
+            "shooting": 1,
+            "defending": 6,
+            "aerial": 5,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "sert_mudahale",
+            "duvar_ol",
+            "demir_savunma",
+            "kontra_atak",
+            "yapis",
+            "hava_hakimi",
+            "kafa_vurusu",
+            "uzun_top"
+          ]
+        },
+        {
+          "id": "ahtapotlar_cm",
+          "name": "Orta Saha Kalamar Kemal",
+          "slot": "CM",
+          "stats": {
+            "speed": 5,
+            "power": 5,
+            "passing": 6,
+            "dribbling": 6,
+            "shooting": 5,
+            "defending": 5,
+            "aerial": 4,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "harika_vizyon",
+            "ara_pasi",
+            "oyun_kurucu",
+            "tempo_belirle",
+            "soguk_kanlilik",
+            "yapis",
+            "orta_saha_kirici",
+            "calim"
+          ]
+        },
+        {
+          "id": "ahtapotlar_lw",
+          "name": "Sol Kanat Deniz",
+          "slot": "LW",
+          "stats": {
+            "speed": 6,
+            "power": 4,
+            "passing": 5,
+            "dribbling": 6,
+            "shooting": 5,
+            "defending": 1,
+            "aerial": 4,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "cizgiye_in",
+            "ici_kes",
+            "ust_kose",
+            "plase",
+            "kanat_kosusu",
+            "geri_don_savun",
+            "soguk_kanlilik",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "ahtapotlar_rw",
+          "name": "Sağ Kanat Yosun Yılmaz",
+          "slot": "RW",
+          "stats": {
+            "speed": 6,
+            "power": 4,
+            "passing": 5,
+            "dribbling": 5,
+            "shooting": 4,
+            "defending": 4,
+            "aerial": 5,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "cizgiye_in",
+            "ici_kes",
+            "ust_kose",
+            "plase",
+            "kanat_kosusu",
+            "geri_don_savun",
+            "soguk_kanlilik",
+            "kolunu_uzat"
+          ]
+        },
+        {
+          "id": "ahtapotlar_st",
+          "name": "Santrafor Köpekbalığı Kaan",
+          "slot": "ST",
+          "stats": {
+            "speed": 5,
+            "power": 6,
+            "passing": 4,
+            "dribbling": 5,
+            "shooting": 6,
+            "defending": 1,
+            "aerial": 6,
+            "near": 0,
+            "far": 0
+          },
+          "deck": [
+            "golcunun_icgudusu",
+            "ust_kose",
+            "plase",
+            "falsolu_sut",
+            "uzak_kose",
+            "omuz_omuza",
+            "sirtini_koy",
+            "kolunu_uzat"
+          ]
+        }
+      ]
+    }
+  ]
+}

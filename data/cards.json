@@ -1,0 +1,1028 @@
+{
+  "schemaVersion": 1,
+  "cards": [
+    {
+      "id": "topu_sakla",
+      "name": "Topu sakla",
+      "text": "4 blok.",
+      "cost": 1,
+      "role": "Both",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "sirtini_koy",
+      "name": "Sırtını koy",
+      "text": "3 blok + Güç kadar blok.",
+      "cost": 1,
+      "role": "Both",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 3,
+          "scaleStat": "Power",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "kolunu_uzat",
+      "name": "Kolunu uzat",
+      "text": "3 blok, rakibi Yorgun yapar.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 3
+        },
+        {
+          "type": "Status",
+          "target": "Opponent",
+          "status": "Tired",
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "calim",
+      "name": "Çalım",
+      "text": "3 hasar + Çalım kadar hasar.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 3,
+          "scaleStat": "Dribbling",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "kayarak_mudahale",
+      "name": "Kayarak müdahale",
+      "text": "4 hasar + Savunma kadar hasar, rakibi Dengesiz yapar.",
+      "cost": 2,
+      "role": "Defense",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 4,
+          "scaleStat": "Defending",
+          "scale": 1
+        },
+        {
+          "type": "Status",
+          "target": "Opponent",
+          "status": "Unbalanced",
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "yapis",
+      "name": "Yapış",
+      "text": "3 blok + Savunma kadar blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 3,
+          "scaleStat": "Defending",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "pas_yolunu_kapat",
+      "name": "Pas yolunu kapat",
+      "text": "5 blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 5
+        }
+      ]
+    },
+    {
+      "id": "kisa_pas",
+      "name": "Kısa pas",
+      "text": "2 hasar + Pas kadar hasar, 1 kart çek.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 2,
+          "scaleStat": "Passing",
+          "scale": 1
+        },
+        {
+          "type": "Draw",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "hizlan",
+      "name": "Hızlan",
+      "text": "2 hasar + Hız kadar hasar, 1 İvme kazan.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 2,
+          "scaleStat": "Speed",
+          "scale": 1
+        },
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "Momentum",
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "sert_girisim",
+      "name": "Sert girişim",
+      "text": "6 hasar + Güç kadar hasar, 1 kondisyon harcar.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 6,
+          "scaleStat": "Power",
+          "scale": 1
+        },
+        {
+          "type": "Kondisyon",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "omuz_omuza",
+      "name": "Omuz omuza",
+      "text": "3 hasar + Güç kadar hasar, 4 blok.",
+      "cost": 2,
+      "role": "Both",
+      "positions": [
+        "DEF",
+        "MID",
+        "ST"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 3,
+          "scaleStat": "Power",
+          "scale": 1
+        },
+        {
+          "type": "Block",
+          "amount": 4
+        }
+      ]
+    },
+    {
+      "id": "soguk_kanlilik",
+      "name": "Soğukkanlılık",
+      "text": "1 enerji ve 1 kart.",
+      "cost": 0,
+      "role": "Both",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Energy",
+          "amount": 1
+        },
+        {
+          "type": "Draw",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "ritim_degistir",
+      "name": "Ritim değiştir",
+      "text": "2 kart çek.",
+      "cost": 1,
+      "role": "Both",
+      "positions": [
+        "DEF",
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Draw",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "duvar_ol",
+      "name": "Duvar ol",
+      "text": "6 blok + Savunma kadar blok.",
+      "cost": 2,
+      "role": "Defense",
+      "positions": [
+        "DEF"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 6,
+          "scaleStat": "Defending",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "uzun_top",
+      "name": "Uzun top",
+      "text": "4 hasar + Pas kadar hasar.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "DEF",
+        "MID"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 4,
+          "scaleStat": "Passing",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "kafa_vurusu",
+      "name": "Kafa vuruşu",
+      "text": "4 hasar + Hava kadar hasar.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "DEF",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 4,
+          "scaleStat": "Aerial",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "hava_hakimi",
+      "name": "Hava hakimi",
+      "text": "3 blok + Hava kadar blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "DEF",
+        "MID"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 3,
+          "scaleStat": "Aerial",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "demir_savunma",
+      "name": "Demir savunma",
+      "text": "8 blok + 2x Savunma blok.",
+      "cost": 3,
+      "role": "Defense",
+      "positions": [
+        "DEF"
+      ],
+      "rarity": "Legendary",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 8,
+          "scaleStat": "Defending",
+          "scale": 2
+        }
+      ]
+    },
+    {
+      "id": "sert_mudahale",
+      "name": "Sert müdahale",
+      "text": "6 hasar + Savunma kadar hasar, rakibi Yorgun yapar.",
+      "cost": 2,
+      "role": "Defense",
+      "positions": [
+        "DEF",
+        "MID"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 6,
+          "scaleStat": "Defending",
+          "scale": 1
+        },
+        {
+          "type": "Status",
+          "target": "Opponent",
+          "status": "Tired",
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "kontra_atak",
+      "name": "Kontra atak",
+      "text": "3 hasar + Hız kadar hasar, 1 İvme kazan.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "DEF",
+        "MID"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 3,
+          "scaleStat": "Speed",
+          "scale": 1
+        },
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "Momentum",
+          "stacks": 1
+        }
+      ]
+    },
+    {
+      "id": "oyun_kurucu",
+      "name": "Oyun kurucu",
+      "text": "2 kart çek.",
+      "cost": 1,
+      "role": "Both",
+      "positions": [
+        "MID"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Draw",
+          "amount": 2
+        }
+      ]
+    },
+    {
+      "id": "ara_pasi",
+      "name": "Ara pası",
+      "text": "5 hasar + Pas kadar hasar, Yorgun rakibe 1.5 kat.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "MID",
+        "WING"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 5,
+          "scaleStat": "Passing",
+          "scale": 1,
+          "bonusIfTargetHas": "Tired",
+          "bonusMultiplier": 1.5
+        }
+      ]
+    },
+    {
+      "id": "orta_saha_kirici",
+      "name": "Orta saha kırıcı",
+      "text": "4 blok + Savunma kadar blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "MID"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 4,
+          "scaleStat": "Defending",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "tempo_belirle",
+      "name": "Tempo belirle",
+      "text": "1 enerji kazan.",
+      "cost": 0,
+      "role": "Both",
+      "positions": [
+        "MID"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Energy",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "harika_vizyon",
+      "name": "Harika vizyon",
+      "text": "4 hasar + 2x Pas hasar, 1 kart çek.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "MID"
+      ],
+      "rarity": "Legendary",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 4,
+          "scaleStat": "Passing",
+          "scale": 2
+        },
+        {
+          "type": "Draw",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "ortala",
+      "name": "Ortala",
+      "text": "3 hasar + Pas kadar hasar.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "WING"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 3,
+          "scaleStat": "Passing",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "kanat_kosusu",
+      "name": "Kanat koşusu",
+      "text": "2 hasar + Hız kadar hasar, 2 İvme kazan.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "WING"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 2,
+          "scaleStat": "Speed",
+          "scale": 1
+        },
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "Momentum",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "ici_kes",
+      "name": "İçeri kes",
+      "text": "Rakibi Dengesiz yap, 5 hasar + Çalım kadar hasar.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "WING"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Status",
+          "target": "Opponent",
+          "status": "Unbalanced",
+          "stacks": 1
+        },
+        {
+          "type": "Damage",
+          "amount": 5,
+          "scaleStat": "Dribbling",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "geri_don_savun",
+      "name": "Geri dön ve savun",
+      "text": "4 blok + Hız kadar blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "WING"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 4,
+          "scaleStat": "Speed",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "cizgiye_in",
+      "name": "Çizgiye in",
+      "text": "5 hasar + Hız kadar hasar, 2 İvme kazan.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "WING"
+      ],
+      "rarity": "Legendary",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 5,
+          "scaleStat": "Speed",
+          "scale": 1
+        },
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "Momentum",
+          "stacks": 2
+        }
+      ]
+    },
+    {
+      "id": "yakin_kose",
+      "name": "Yakın köşe",
+      "text": "Yakın köşeye şut: 5 hasar + Şut kadar hasar.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 5,
+          "scaleStat": "Shooting",
+          "scale": 1,
+          "corner": "Near"
+        }
+      ]
+    },
+    {
+      "id": "uzak_kose",
+      "name": "Uzak köşe",
+      "text": "Uzak köşeye şut: 5 hasar + Şut kadar hasar.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 5,
+          "scaleStat": "Shooting",
+          "scale": 1,
+          "corner": "Far"
+        }
+      ]
+    },
+    {
+      "id": "ust_kose",
+      "name": "Üst köşe",
+      "text": "Üst köşeye şut: 7 hasar + Şut kadar hasar, kaleci engelleyemez.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "WING",
+        "ST"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 7,
+          "scaleStat": "Shooting",
+          "scale": 1,
+          "corner": "Top"
+        }
+      ]
+    },
+    {
+      "id": "plase",
+      "name": "Plase",
+      "text": "Uzak köşeye plase: 6 hasar + Şut kadar hasar.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 6,
+          "scaleStat": "Shooting",
+          "scale": 1,
+          "corner": "Far"
+        }
+      ]
+    },
+    {
+      "id": "sert_sut",
+      "name": "Füze",
+      "text": "Köşesiz sert şut: 8 hasar + Güç kadar hasar (yarısı geçer).",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "MID",
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 8,
+          "scaleStat": "Power",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "falsolu_sut",
+      "name": "Falsolu şut",
+      "text": "Kaleciyi Dengesiz yap, yakın köşeye 4 hasar + Şut kadar hasar.",
+      "cost": 2,
+      "role": "Attack",
+      "positions": [
+        "WING",
+        "ST"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Status",
+          "target": "Opponent",
+          "status": "Unbalanced",
+          "stacks": 1
+        },
+        {
+          "type": "Damage",
+          "amount": 4,
+          "scaleStat": "Shooting",
+          "scale": 1,
+          "corner": "Near"
+        }
+      ]
+    },
+    {
+      "id": "vole",
+      "name": "Vole",
+      "text": "Yakın köşeye vole: 4 hasar + Şut kadar hasar, 1 kondisyon harcar.",
+      "cost": 1,
+      "role": "Attack",
+      "positions": [
+        "WING",
+        "ST"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 4,
+          "scaleStat": "Shooting",
+          "scale": 1,
+          "corner": "Near"
+        },
+        {
+          "type": "Kondisyon",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "golcunun_icgudusu",
+      "name": "Golcünün içgüdüsü",
+      "text": "Üst köşeye 12 hasar + Şut kadar hasar, 1 kondisyon harcar.",
+      "cost": 3,
+      "role": "Attack",
+      "positions": [
+        "ST"
+      ],
+      "rarity": "Legendary",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 12,
+          "scaleStat": "Shooting",
+          "scale": 1,
+          "corner": "Top"
+        },
+        {
+          "type": "Kondisyon",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "saga_yat",
+      "name": "Sağa yat",
+      "text": "Yakın köşeyi kapat, 3 blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "CoverNear",
+          "stacks": 1
+        },
+        {
+          "type": "Block",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "sola_yat",
+      "name": "Sola yat",
+      "text": "Uzak köşeyi kapat, 3 blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "CoverFar",
+          "stacks": 1
+        },
+        {
+          "type": "Block",
+          "amount": 3
+        }
+      ]
+    },
+    {
+      "id": "cik_ve_kap",
+      "name": "Çık ve kap",
+      "text": "Şutçuya 4 hasar + Savunma kadar hasar.",
+      "cost": 2,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Rare",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 4,
+          "scaleStat": "Defending",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "refleks",
+      "name": "Refleks",
+      "text": "2 blok + Yakın kadar blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 2,
+          "scaleStat": "Near",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "uzanis",
+      "name": "Uzanış",
+      "text": "2 blok + Uzak kadar blok.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 2,
+          "scaleStat": "Far",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "kafa_yumruk",
+      "name": "Yumrukla uzaklaştır",
+      "text": "3 hasar + Hava kadar hasar.",
+      "cost": 1,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Damage",
+          "amount": 3,
+          "scaleStat": "Aerial",
+          "scale": 1
+        }
+      ]
+    },
+    {
+      "id": "derin_nefes",
+      "name": "Derin nefes",
+      "text": "2 blok, 1 kart çek.",
+      "cost": 0,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Common",
+      "effects": [
+        {
+          "type": "Block",
+          "amount": 2
+        },
+        {
+          "type": "Draw",
+          "amount": 1
+        }
+      ]
+    },
+    {
+      "id": "ahtapot_eller",
+      "name": "Ahtapot eller",
+      "text": "İki köşeyi de kapat, 6 blok.",
+      "cost": 2,
+      "role": "Defense",
+      "positions": [
+        "GK"
+      ],
+      "rarity": "Legendary",
+      "effects": [
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "CoverNear",
+          "stacks": 1
+        },
+        {
+          "type": "Status",
+          "target": "Self",
+          "status": "CoverFar",
+          "stacks": 1
+        },
+        {
+          "type": "Block",
+          "amount": 6
+        }
+      ]
+    }
+  ]
+}
