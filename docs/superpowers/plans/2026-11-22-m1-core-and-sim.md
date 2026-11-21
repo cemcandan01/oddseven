@@ -55,7 +55,7 @@ core/WeirdLand.Sim/
 
 ---
 
-### Görev 1: Çözüm iskeleti ve deterministik RNG
+### Task 1 (Görev 1): Çözüm iskeleti ve deterministik RNG
 
 **Files:**
 - Create: `.gitignore`, `core/WeirdLand.Core/WeirdLand.Core.csproj`, `core/WeirdLand.Core/IsExternalInit.cs`, `core/WeirdLand.Core/Rng.cs`
@@ -134,7 +134,7 @@ git commit -m "core: solution skeleton and deterministic Rng"
 
 ---
 
-### Görev 2: Veri modeli ve JSON yükleyici
+### Task 2 (Görev 2): Veri modeli ve JSON yükleyici
 
 **Files:**
 - Create: `core/WeirdLand.Core/Data/*.cs` (Enums, Stats, EffectDef, CardDef, PlayerDef, TeamDef, GameData, DataLoader, DataException)
@@ -195,7 +195,7 @@ Newtonsoft ayarları: `MissingMemberHandling.Error`, `StringEnumConverter` (tams
 
 ---
 
-### Görev 3: Etki çözümleyici ve durum etkileri
+### Task 3 (Görev 3): Etki çözümleyici ve durum etkileri
 
 **Files:**
 - Create: `core/WeirdLand.Core/Duel/DuelRules.cs`, `CardInstance.cs`, `Combatant.cs`, `EffectResolver.cs`, `core/WeirdLand.Core/Events.cs`
@@ -262,7 +262,7 @@ Hasar sırası (`ComputeDamage`):
 
 ---
 
-### Görev 4: Düello akışı ve rakip niyeti
+### Task 4 (Görev 4): Düello akışı ve rakip niyeti
 
 **Files:**
 - Create: `core/WeirdLand.Core/Duel/DuelSetup.cs`, `Duel.cs`, `EnemyAi.cs`
@@ -333,7 +333,7 @@ Akış:
 
 ---
 
-### Görev 5: Pas ve şut düellosu
+### Task 5 (Görev 5): Pas ve şut düellosu
 
 **Files:**
 - Modify: `core/WeirdLand.Core/Duel/Duel.cs`, `DuelRules.cs`, `EnemyAi.cs`
@@ -374,7 +374,7 @@ Akış:
 
 ---
 
-### Görev 6: Maç motoru
+### Task 6 (Görev 6): Maç motoru
 
 **Files:**
 - Create: `core/WeirdLand.Core/Match/Tactic.cs`, `PlayerState.cs`, `TeamState.cs`, `MatchRules.cs`, `MatchEngine.cs`
@@ -457,7 +457,7 @@ Sonuçları zorlamak için `Duel`'e `internal void ForceOutcome(DuelOutcome o, P
 
 ---
 
-### Görev 7: Oyuncu modelleri ve maç oynatıcı
+### Task 7 (Görev 7): Oyuncu modelleri ve maç oynatıcı
 
 **Files:**
 - Create: `core/WeirdLand.Core/Ai/DuelAction.cs`, `IUserPolicy.cs`, `RandomPolicy.cs`, `GoodPolicy.cs`, `MatchRunner.cs`
@@ -503,7 +503,7 @@ Sonuçları zorlamak için `Duel`'e `internal void ForceOutcome(DuelOutcome o, P
 
 ---
 
-### Görev 8: Gerçek oyun verisi
+### Task 8 (Görev 8): Gerçek oyun verisi
 
 **Files:**
 - Create: `data/cards.json`, `data/teams.json`
@@ -539,7 +539,7 @@ static GameData Load() => DataLoader.Load(Path.Combine(TestContext.CurrentContex
 
 ---
 
-### Görev 9: Simülatör
+### Task 9 (Görev 9): Simülatör
 
 **Files:**
 - Modify: `core/WeirdLand.Sim/Program.cs`
@@ -570,7 +570,7 @@ Expected: her rakip için rapor, istisna yok. Aynı komut ikinci kez çalıştı
 
 ---
 
-### Görev 10: Denge ayarı ve rapor
+### Task 10 (Görev 10): Denge ayarı ve rapor
 
 **Files:**
 - Modify: `data/cards.json`, `data/teams.json`, gerekirse `core/WeirdLand.Core/Duel/DuelRules.cs` ve `Match/MatchRules.cs` sabitleri
