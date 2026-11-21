@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="WeirdLand.Core.Tests/WeirdLand.Core.Tests.csproj" />
+  <Project Path="WeirdLand.Core/WeirdLand.Core.csproj" />
+  <Project Path="WeirdLand.Sim/WeirdLand.Sim.csproj" />
+</Solution>
