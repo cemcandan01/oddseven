@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>Gri Kutu Futbol</title>
+<style>
+body{font:14px/1.4 sans-serif;margin:0;background:#e6e6e6;color:#222}
+#wrap{display:grid;grid-template-columns:430px 1fr 340px;gap:10px;padding:10px;height:calc(100vh - 20px);box-sizing:border-box}
+.box{background:#fafafa;border:1px solid #999;padding:8px;overflow:auto}
+h3{margin:0 0 6px}
+table.strip{border-collapse:collapse;width:100%}
+table.strip td{border:1px solid #888;background:#ccc;height:62px;text-align:center;font-weight:bold}
+table.strip td.lab{width:130px;background:#ddd;text-align:left;font-weight:normal;font-size:11px;vertical-align:top}
+table.strip td.box4{background:#b9d4ad}
+table.strip td.ball{background:#ffe680}
+.a{color:#0040c0}.b{color:#c00000}
+#score{font-size:22px;font-weight:bold}
+#meta{font-size:12px;color:#444;margin-bottom:8px}
+#prompt button{display:block;width:100%;text-align:left;margin:4px 0;padding:6px;font:inherit;white-space:pre-line;cursor:pointer}
+.info{color:#444;margin-bottom:6px}
+#bar{margin-bottom:8px}#bar>button{float:right;padding:3px 10px;cursor:pointer}
+#help summary{cursor:pointer;font-weight:bold}#help ul{margin:4px 0 0;padding-left:18px;font-size:12px}#help li{margin:2px 0}
+table.ro{border-collapse:collapse;width:100%;font-size:11px;margin-top:8px}
+table.ro td,table.ro th{border:1px solid #bbb;padding:1px 3px;text-align:left}
+#log div{border-bottom:1px solid #ddd;padding:2px 0;font-size:13px}
+#log .ok{color:#0a6a0a}#log .bad{color:#a00000}
+#log .goalok{background:#b9ecb9;font-weight:bold;color:#0a5a0a}#log .goalbad{background:#f2b9b9;font-weight:bold;color:#900000}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div class="box"><table class="strip" id="strip"></table><div id="view" class="info" style="margin-top:6px"></div></div>
+  <div class="box">
+    <div id="bar">
+      <button onclick="if(confirm('Maç sıfırlansın mı?'))location.href=location.pathname">Yeni maç</button>
+      <details id="help"><summary>Nasıl oynanır?</summary>
+        <ul>
+          <li><b>Saha:</b> 4 faz × 3 kulvar. Faz 1 kendi yarın, Faz 4 rakip ceza sahası. Her hamle 3 dakika, maç 90 dakika.</li>
+          <li><b>Hücumda:</b> kısa pas, uzun pas (iki faz ileri, Hava düellosu), çalım (bir faz ilerle), koru (yerinde kal, destek gelir), içeri kat (orta kulvara geç), orta aç (Faz 3-4 kanattan), şut (Faz 4'ten ya da Faz 3 orta kulvardan).</li>
+          <li><b>Gizli seçim:</b> hücum eden hamlesini, savunan cevabını aynı anda ve gizlice seçer, sonra ikisi birden açılır. Rakip senin geçmiş tercihlerinden seni okumaya çalışır, hep aynı şeyi yapma.</li>
+          <li><b>Savunma cevapları:</b> Kayarak (koruyu keser, çalıma yenilir) · Yapış (çalımı keser, koruya yenilir) · Pas yolunu kapat (uzun pası keser, kısa pas ve çalıma biraz yenilir) · Blokla (şutu keser). Her seçenekte, rakibin her hamlesine karşı durdurma ihtimalin yazar.</li>
+          <li><b>Hücumda yüzdeler:</b> nötr cevaba göredir. Altında, rakip cevabına göre en kötü ve en iyi ihtimal aralığı yazar.</li>
+          <li><b>Başarı:</b> 50 + 10 × (hücum statı − savunma statı) + bonuslar − 5 × baskı. Sonuç %10 ile %90 arasında tutulur. Baskı, o fazdaki rakip savunmacı sayısıdır.</li>
+          <li><b>Hype ve alev:</b> başarı ihtimali %60'ın altındaki riskli bir hamleyi başarırsan +1 hype. 3 hype = ALEV (+20). Alevliyken durdurulursan alevin söner, seni durduran direkt alev alır. Gol atan takımın herkesi +1 hype alır.</li>
+          <li><b>Meyveler:</b> alevdeyken çalışır. Kılıç Balığı: Güç +2. Uçan Balık: Hava +2 ve orta açma +2. Kaleci meyveleri köşeleri etkiler: Ahtapot uzak köşede güçlü, Kral Yengeç yakın köşede güçlü.</li>
+          <li><b>Taktik:</b> sadece ölü toplarda seçilir (başlangıç, gol, kurtarış, aut).</li>
+          <li><b>Seed:</b> üst satırda görünür. <code>?seed=123</code> ile aynı zarları tekrar alırsın. <code>?sim=1000</code> ile AI'ı AI'a karşı oynatıp denge testi yaparsın.</li>
+        </ul>
+      </details>
+    </div>
+    <div id="score"></div>
+    <div id="meta"></div>
+    <div id="prompt"></div>
+    <div id="roster"></div>
+  </div>
+  <div class="box"><h3>Maç Günlüğü</h3><div id="log"></div></div>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+// ---------- rastgelelik: seed'li (?seed=123 ile tekrar üretilebilir) · ?sim=N ile AI-AI denge testi ----------
+const QS=new URLSearchParams(location.search);
+const SIM=Math.max(0,parseInt(QS.get('sim'))||0);
+const SEED=(parseInt(QS.get('seed'))>>>0)||((Math.random()*4294967296)>>>0)||1;
+function mulberry32(a){return()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+const R=mulberry32(SEED);
+const rnd=n=>Math.floor(R()*n);
+const sleep=ms=>SIM?Promise.resolve():new Promise(r=>setTimeout(r,ms));
+const fmt=n=>Math.round(n*10)/10;
+const sg=v=>(v>0?'+':'')+fmt(v);
+const clampP=x=>Math.min(0.9,Math.max(0.1,x));
+const isRisky=p=>p<0.6;
+
+// ---------- veri ----------
+const KEYS=['hiz','guc','pas','calim','sut','sav','hava'];
+const SN={hiz:'Hız',guc:'Güç',pas:'Pas',calim:'Çalım',sut:'Şut',sav:'Savunma',hava:'Hava'};
+const LN=['sol kulvar','orta kulvar','sağ kulvar'];
+const CN={ul:'sol üst',ur:'sağ üst',dl:'sol alt',dr:'sağ alt'};
+const CORNERS=['ul','ur','dl','dr'];
+const PERK={ahtapot:'Ahtapot',yengec:'Kral Yengeç',kilic:'Kılıç Balığı',ucan:'Uçan Balık'};
+const FRUIT={kilic:'guc',ucan:'hava'};
+const HOME={GK:1,D1:0,D2:2,MID:1,W1:0,W2:2,ST:1};// oyuncunun kulvarı
+const ZP={G:[1],M:[2],F:[3,4]};// bölge -> oynadığı fazlar (G geri, M orta, F ileri)
+const TA={bal:'Dengeli',fwd:'Kanatlar ileri',all:'Yüklen'};
+const TD={press:'Ön alan baskısı',bal:'Dengeli',back:'Geri çekil'};
+const RESP={K:'Kayarak müdahale',Y:'Yapış',P:'Pas yolunu kapat',B:'Blokla'};
+
+// [rol, ad, kısa ad, hız,güç,pas,çalım,şut,savunma,hava, meyve]
+const ROSTER_A=[
+  ['GK','Kaleci','KAL',[2,2,3,1,1,3,3],'ahtapot'],
+  ['D1','Sol Savunma','SD',[2,4,3,1,1,4,3]],
+  ['D2','Sağ Savunma','ŞD',[3,4,2,1,1,4,2]],
+  ['MID','Orta Saha','OS',[3,3,5,4,2,3,2]],
+  ['W1','Sol Kanat','SK',[5,2,3,4,3,1,3],'ucan'],
+  ['W2','Sağ Kanat','ŞK',[4,2,4,3,3,2,2]],
+  ['ST','Santrafor','SF',[3,5,2,3,4,1,4],'kilic']
+];
+const ROSTER_B=[
+  ['GK','Kaleci','KAL',[2,3,3,1,1,3,3],'yengec'],
+  ['D1','Sol Savunma','SD',[3,4,2,1,1,4,3]],
+  ['D2','Sağ Savunma','ŞD',[2,3,3,2,1,5,3]],
+  ['MID','Orta Saha','OS',[3,3,4,4,3,3,2]],
+  ['W1','Sol Kanat','SK',[4,2,3,5,3,1,2]],
+  ['W2','Sağ Kanat','ŞK',[5,2,3,3,2,2,3],'ucan'],
+  ['ST','Santrafor','SF',[3,4,2,3,5,1,4],'kilic']
+];
+function mkTeam(name,cls,human,ro){
+  const t={name,cls,human,score:0,att:'bal',def:'bal',zones:{},out:new Set(),pl:[],
+    seenK:{sp:1,lp:1,cal:1,kor:1,ic:1,cross:1,sut:1},seenR:{K:1,Y:1,P:1,B:1}};
+  ro.forEach(r=>{
+    const st={};KEYS.forEach((k,i)=>st[k]=r[3][i]);
+    if(r[0]==='GK'){st.yakin=3;st.uzak=3;}
+    t.pl.push({team:t,role:r[0],name:r[1],short:r[2],st,perk:r[4]||null,hype:0,flame:false,ks:0});
+  });
+  return t;
+}
+const mkStats=()=>({shots:0,ont:0,goals:0,wins:0,lanes:[0,0,0]});
+let S;
+function newState(){// sim modunda Mavi de yapay zeka
+  S={A:mkTeam('Mavi','a',!SIM,ROSTER_A),B:mkTeam('Kırmızı','b',false,ROSTER_B),min:0,ball:null,trans:false,intent:null,view:null,support:null,stats:{A:mkStats(),B:mkStats()},t0:0};
+  defZones(S.A);defZones(S.B);
+}
+newState();
+const other=t=>t===S.A?S.B:S.A;
+const key=t=>t===S.A?'A':'B';
+const ours=p=>p.team===S.A;
+const full=p=>`${p.team.name} ${p.name}`;
+
+// günlük Mavi'nin gözünden yazılır
+const OURS={GK:'Kalecimiz',D1:'Sol savunmamız',D2:'Sağ savunmamız',MID:'Orta sahamız',W1:'Sol kanadımız',W2:'Sağ kanadımız',ST:'Santraforumuz'};
+const THEIRS={GK:'Rakip kaleci',D1:'Rakip sol savunma',D2:'Rakip sağ savunma',MID:'Rakip orta saha',W1:'Rakip sol kanat',W2:'Rakip sağ kanat',ST:'Rakip santrafor'};
+const OURS_DAT={GK:'Kalecimize',D1:'Sol savunmamıza',D2:'Sağ savunmamıza',MID:'Orta sahamıza',W1:'Sol kanadımıza',W2:'Sağ kanadımıza',ST:'Santraforumuza'};
+const THEIRS_DAT={GK:'Rakip kaleciye',D1:'Rakip sol savunmaya',D2:'Rakip sağ savunmaya',MID:'Rakip orta sahaya',W1:'Rakip sol kanada',W2:'Rakip sağ kanada',ST:'Rakip santrafora'};
+const who=p=>(ours(p)?OURS:THEIRS)[p.role];
+const dat=p=>(ours(p)?OURS_DAT:THEIRS_DAT)[p.role];
+const lc=t=>t[0].toLowerCase()+t.slice(1);
+// eylemi yapan Mavi ise başarı yeşil / başarısızlık kırmızı; rakipse tersi
+const cl=(actor,success)=>ours(actor)===success?'ok':'bad';
+
+// ---------- taktik: kim hangi bölgede ----------
+// top bizdeyken
+function attackZones(t,lane){
+  const z={GK:'G'};
+  if(t.att==='fwd')Object.assign(z,{ST:'F',W1:'F',W2:'F',MID:'M',D1:'G',D2:'G'});
+  else if(t.att==='all')Object.assign(z,{ST:'F',W1:'F',W2:'F',MID:'F',D1:'G',D2:'M'});
+  else{
+    const w1=t.pl.find(p=>p.role==='W1'),w2=t.pl.find(p=>p.role==='W2');
+    const fw=lane===0?'W1':lane===2?'W2':(w1.st.hiz>=w2.st.hiz?'W1':'W2');
+    Object.assign(z,{ST:'F',MID:'G',D1:'G',D2:'G',W1:'M',W2:'M'});z[fw]='F';
+  }
+  t.zones=z;
+}
+// top rakipteyken
+function defZones(t){
+  if(t.def==='press')t.zones={GK:'G',ST:'F',W1:'F',W2:'F',MID:'M',D1:'M',D2:'G'};
+  else if(t.def==='back')t.zones={GK:'G',D1:'G',D2:'G',W1:'G',W2:'G',MID:'M',ST:'M'};
+  else t.zones={GK:'G',ST:'F',W1:'M',W2:'M',MID:'M',D1:'G',D2:'G'};
+}
+
+// topun bulunduğu faza (hücum eden takım gözünden f) karşılık gelen savunmacılar: savunmanın kendi fazı 5-f
+const defendersAt=(def,f)=>def.pl.filter(p=>p.role!=='GK'&&!def.out.has(p.role)&&ZP[def.zones[p.role]].includes(5-f));
+// baskı birimi: o fazdaki rakip savunmacı sayısı (Ön alan baskısı: rakibin Faz 1-2'sinde +2)
+const pressUnits=(def,f)=>defendersAt(def,f).length+(def.def==='press'&&!S.trans&&f<=2?2:0);
+// karşıya çıkan savunmacı: o fazdaki, kulvara en yakın olan
+function engage(def,f,lane){
+  let c=defendersAt(def,f);
+  if(!c.length){
+    const o=def.pl.filter(p=>p.role!=='GK'&&!def.out.has(p.role)),tp=5-f;
+    const dist=p=>Math.min(...ZP[def.zones[p.role]].map(x=>Math.abs(x-tp)));
+    const m=Math.min(...o.map(dist));c=o.filter(p=>dist(p)===m);
+  }
+  return c.reduce((b,p)=>{const sb=Math.abs(HOME[b.role]-lane),sp=Math.abs(HOME[p.role]-lane);return sp<sb||(sp===sb&&p.st.sav>b.st.sav)?p:b;});
+}
+function boxDef(def){
+  const c=defendersAt(def,4);
+  return (c.length?c:[engage(def,4,1)]).reduce((b,p)=>p.st.hava>b.st.hava?p:b);
+}
+// pas hedefleri: o faz ve komşu fazdaki hazır oyuncular
+function targets(att,car,f,kind){
+  return att.pl.filter(p=>{
+    if(p===car)return false;
+    const zp=ZP[att.zones[p.role]];
+    return kind==='sp'?(zp.includes(f)||zp.includes(Math.min(4,f+1))):(f<=2&&zp.includes(f+2));
+  });
+}
+const spPhase=(att,p,f)=>f<4&&ZP[att.zones[p.role]].includes(f+1)?f+1:f;
+function crossTarget(att,car){
+  const box=att.pl.filter(p=>p!==car&&p.role!=='GK'&&att.zones[p.role]==='F');
+  return box.length?box.reduce((b,x)=>x.st.hava>b.st.hava?x:b):null;
+}
+
+// ---------- hype ----------
+const hs=p=>p.flame?'ALEV 🔥':`Hype ${p.hype}/3`;
+const teamHype=t=>t.pl.reduce((n,p)=>n+p.hype,0);
+function hypeUp(p){
+  if(p.flame)return;
+  p.hype++;
+  if(p.hype>=3){p.hype=3;p.flame=true;log(`🔥 ${who(p)} ALEV aldı!`,ours(p)?'ok':'bad');}
+}
+function lost(p){
+  if(!p.flame)return;
+  p.flame=false;p.hype=0;
+  log(`${who(p)} alevini kaybetti. Hype 0/3`,ours(p)?'bad':'ok');
+  // takım hype'ı biraz düşer: en yüksek hype'lı takım arkadaşı -1
+  const m=p.team.pl.filter(q=>q!==p&&!q.flame&&q.hype>0).sort((a,b)=>b.hype-a.hype)[0];
+  if(m){m.hype--;log(`Takım hype'ı düştü: ${who(m)} Hype ${m.hype}/3`,ours(p)?'bad':'ok');}
+}
+// defRisk: savunmanın başarı ihtimali %60'ın altındaysa hype verir
+function stopped(attP,defP,defRisk){
+  const was=attP.flame;
+  lost(attP);
+  if(was){
+    if(!defP.flame){defP.flame=true;defP.hype=3;log(`🔥 ${who(defP)} alevli ${ours(defP)?'rakibi':'oyuncumuzu'} durdurdu, direkt ALEV aldı!`,ours(defP)?'ok':'bad');}
+  }else if(defRisk)hypeUp(defP);
+}
+
+// ---------- başarı formülü ----------
+// başarı = 50 + 10×(hücum − savunma) + bonuslar (niyet, alev, meyve) − baskı×5, %10-%90
+const PRESS=5;
+function calcP(aLab,av,dLab,dv,bon,units,note){
+  let t=50+10*(av-dv);
+  const parts=[`50 + 10×(${aLab} ${fmt(av)} − ${dLab} ${fmt(dv)}) = ${fmt(t)}`];
+  for(const[l,v]of bon){if(!v)continue;t+=v;parts.push(`${l} ${sg(v)}`);}
+  t-=PRESS*units;
+  parts.push(`baskı ${units}×${PRESS} -${PRESS*units}${note||''}`);
+  const p=clampP(t/100);
+  return{p,text:`${parts.join(', ')} → %${Math.round(p*100)}`};
+}
+const fruitB=(p,stat)=>p.flame&&FRUIT[p.perk]===stat?20:0;// meyve: alevdeyken ilgili stat +2
+const fruitL=(p,stat)=>`meyve (${PERK[p.perk]} ${SN[stat]} +2)`;
+// savunma hamlesinin (ya da görünen niyetin) saldırıya etkisi
+function respMod(resp,k){
+  const cal=k==='cal'||k==='ic';
+  if(resp==='K')return cal?20:k==='kor'?-20:0;
+  if(resp==='Y')return k==='kor'?20:cal?-20:0;
+  if(resp==='P')return k==='lp'?-20:k==='sp'?10:cal?10:0;
+  if(resp==='B')return k==='sut'?-20:0;
+  return 0;
+}
+// bir hamlenin ihtimali ve dökümü; resp: savunmanın hamlesi / niyeti
+function evalAct(att,def,car,act,resp){
+  const bl=S.ball,f=bl.phase,k=act.k,bon=[];
+  const add=(l,v)=>{if(v)bon.push([l,v]);};
+  let df,ph=f,a,d,tgt=null;
+  if(k==='lp'){ph=f+2;df=engage(def,ph,HOME[act.to.role]);}
+  else if(k==='cross'){ph=4;tgt=crossTarget(att,car);df=boxDef(def);}
+  else df=engage(def,f,bl.lane);
+  const sd=resp==='K'?'hiz':'sav';
+  if(k==='sp'){a=['Pas',car.st.pas];d=[`${df.name} Savunma`,df.st.sav];}
+  else if(k==='lp'){a=[`${act.to.name} Hava`,act.to.st.hava];d=[`${df.name} Hava`,df.st.hava];add(fruitL(act.to,'hava'),fruitB(act.to,'hava'));add(fruitL(df,'hava').replace('meyve','rakip meyvesi'),-fruitB(df,'hava'));}
+  else if(k==='cal'||k==='ic'){a=['Çalım',car.st.calim];d=[`${df.name} ${SN[sd]}`,df.st[sd]];}
+  else if(k==='kor'){a=['Güç',car.st.guc];d=[`${df.name} ${SN[sd]}`,df.st[sd]];add(fruitL(car,'guc'),fruitB(car,'guc'));add('art arda koru',-15*car.ks);}
+  else{// orta aç: ceza sahasında Hava düellosu
+    a=[`${tgt.name} Hava`,tgt.st.hava];d=[`${df.name} Hava`,df.st.hava];
+    add(fruitL(tgt,'hava'),fruitB(tgt,'hava'));
+    if(car.perk==='ucan'&&car.flame)add('meyve (Uçan Balık orta aç +2)',20);
+    add('rakip meyvesi',-fruitB(df,'hava'));
+  }
+  add('alev',car.flame?20:0);
+  add('rakip alevi',df.flame?-20:0);
+  if(resp)add(`savunma: ${RESP[resp]}`,respMod(resp,k));
+  let units=pressUnits(def,ph),note='';
+  if(S.support){units=Math.max(0,units-1);note=` (destek ${S.support.short} -1)`;}
+  const r=calcP(a[0],a[1],d[0],d[1],bon,units,note);
+  return Object.assign(r,{df,ph,tgt});
+}
+// şut: Faz 4 ya da Faz 3 orta kulvar (-2); şutçunun Şut statı vs kalecinin köşe statı
+function shotEval(att,def,car,corner,resp){
+  const bl=S.ball,f=bl.phase,lane=bl.lane,gk=def.pl[0];
+  const top=corner[0]==='u',side=corner[1];
+  const nearSide=lane===0?'l':lane===2?'r':null;// kaleci topun kulvarındaki tarafa yakın durur
+  const pk=gk.perk,ad={n:pk==='ahtapot'?-1:pk==='yengec'?2:0,f:pk==='ahtapot'?2:pk==='yengec'?-1:0};
+  let gv,adj,gt;
+  if(nearSide===null){gv=(gk.st.yakin+gk.st.uzak)/2;adj=(ad.n+ad.f)/2;gt='orta kulvar (yakın/uzak ort.)';}
+  else if(side===nearSide){gv=gk.st.yakin;adj=ad.n;gt='yakın köşe';}
+  else{gv=gk.st.uzak;adj=ad.f;gt='uzak köşe';}
+  if(top)gv-=1;
+  const av=top?car.st.sut:(car.st.sut+car.st.guc)/2;
+  const df=engage(def,f,lane);
+  let units=pressUnits(def,f),note='';
+  if(S.support){units=Math.max(0,units-1);note=` (destek ${S.support.short} -1)`;}
+  const mk=blk=>{
+    const bon=[];
+    const add=(l,v)=>{if(v)bon.push([l,v]);};
+    add('alev',car.flame?20:0);
+    add('kaleci alevi',gk.flame?-20:0);
+    if(!top)add(fruitL(car,'guc'),fruitB(car,'guc')/2);
+    if(adj)add(`kaleci meyvesi (${PERK[pk]}: ${gt} ${sg(adj)})`,-10*adj);
+    if(f===3)add('Faz 3 orta kulvar (-2)',-20);
+    if(blk)add(`savunma: ${RESP.B}`,respMod('B','sut'));
+    return calcP(top?'Şut':'Şut/Güç ort.',av,`kaleci ${gt}${top?' (üst -1)':''}`,gv,bon,units,note);
+  };
+  const a=mk(resp==='B'),b=mk(false);
+  return{p:a.p,pNo:b.p,text:a.text,df,gk,ph:f};
+}
+const ev=(att,def,car,a,resp)=>a.k==='sut'?shotEval(att,def,car,a.corner,resp):evalAct(att,def,car,a,resp);
+const bestCorner=(att,def,car)=>CORNERS.reduce((b,c)=>shotEval(att,def,car,c,null).p>shotEval(att,def,car,b,null).p?c:b);
+
+
+function candidates(att,car){
+  const bl=S.ball,f=bl.phase,c=[];
+  for(const p of targets(att,car,f,'sp'))c.push({k:'sp',to:p});
+  for(const p of targets(att,car,f,'lp'))c.push({k:'lp',to:p});
+  c.push({k:'cal'},{k:'kor'});
+  if(bl.lane!==1){
+    c.push({k:'ic'});
+    if(f>=3&&crossTarget(att,car))c.push({k:'cross'});
+  }
+  if(f===4||(f===3&&bl.lane===1))for(const cr of CORNERS)c.push({k:'sut',corner:cr});
+  return c;
+}
+
+const past={
+  sp:a=>`${lc(dat(a.to))} kısa pas verdi`,
+  lp:a=>`${lc(dat(a.to))} uzun pas gönderdi`,
+  cal:()=>'çalım attı',kor:()=>'topu korudu',ic:()=>'içeri kat yaptı',cross:()=>'ortaladı',
+  sut:a=>`${CN[a.corner]} köşeye şut çekti`
+};
+const pres={
+  sp:a=>`${lc(dat(a.to))} kısa pas vermeye çalışıyor`,
+  lp:a=>`${lc(dat(a.to))} uzun pas göndermeye çalışıyor`,
+  cal:()=>'çalım atmaya çalışıyor',kor:()=>'topu korumaya çalışıyor',ic:()=>'içeri kat yapmaya çalışıyor',cross:()=>'orta açmaya çalışıyor',
+  sut:a=>`${CN[a.corner]} köşeye şut çekmeye çalışıyor`
+};
+const kindName={sp:'Kısa pas',lp:'Uzun pas',cal:'Çalım',kor:'Koru',ic:'İçeri kat',cross:'Orta aç',sut:'Şut'};
+
+// ---------- arayüz ----------
+function log(t,cls){if(SIM)return;const d=document.createElement('div');d.textContent=`${S.min}' ${t}`;if(cls)d.className=cls;$('log').appendChild(d);$('log').scrollTop=1e9;}
+function idle(t){if(!SIM)$('prompt').textContent=t;}
+function ask(title,info,opts){
+  return new Promise(res=>{
+    const P=$('prompt');P.innerHTML='';
+    const h=document.createElement('h3');h.textContent=title;P.append(h);
+    if(info){const i=document.createElement('div');i.className='info';i.textContent=info;P.append(i);}
+    opts.forEach((o,i)=>{
+      const b=document.createElement('button');
+      b.textContent=o.label+(o.pct!=null?`  —  %${o.pct}`:'')+(o.note?`\n${o.note}`:'');
+      b.onclick=()=>{P.innerHTML='';res(i);};
+      P.append(b);
+    });
+  });
+}
+async function choose(title,info,opts){
+  if(opts.length===1){log(`(Tek seçenek: ${opts[0].label} otomatik seçildi)`);return 0;}
+  return ask(title,info,opts);
+}
+function activeTac(t){
+  const bl=S.ball;
+  if(bl&&bl.team===t)return `hücum: ${TA[t.att]}`;
+  return `savunma: ${TD[t.def]}${S.trans?' (geçiş: önceki hücum dizilişi)':''}`;
+}
+function render(){
+  if(SIM)return;
+  const A=S.A,B=S.B,bl=S.ball;
+  $('score').textContent=`${A.name} ${A.score} - ${B.score} ${B.name}   ⏱ ${S.min}'`;
+  $('meta').textContent=`Dakika ${S.min}/90 · Top: ${bl?`${full(bl.car)} (Faz ${bl.phase}, ${LN[bl.lane]})`:'-'} · ${A.name} ${activeTac(A)} · ${B.name} ${activeTac(B)} · Seed ${SEED}`;
+  const names={4:'Ceza sahası',3:'Hücum bölgesi',2:'Orta saha',1:'Kendi yarımız'};
+  let h='';
+  for(let r=4;r>=1;r--){
+    const ma=A.pl.filter(p=>ZP[A.zones[p.role]].includes(r)).map(p=>p.short).join(' ');
+    const rb=B.pl.filter(p=>ZP[B.zones[p.role]].includes(5-r)).map(p=>p.short).join(' ');
+    let pr='';
+    if(bl){const att=bl.team,def=other(att);pr=` · baskı ${PRESS*pressUnits(def,att===A?r:5-r)}`;}
+    h+=`<tr><td class="lab"><b>${names[r]}</b><br>Mavi F${r} · Kırmızı F${5-r}<br><span class="a">${ma}</span> | <span class="b">${rb}</span><br>${pr.slice(3)}</td>`;
+    for(let x=0;x<3;x++){
+      const here=bl&&(bl.team===A?bl.phase:5-bl.phase)===r&&bl.lane===x;
+      h+=`<td class="${r===4||r===1?'box4':''}${here?' ball':''}">${here?`<span class="${bl.team.cls}">⚽ ${bl.car.short}</span>`:''}</td>`;
+    }
+    h+='</tr>';
+  }
+  $('strip').innerHTML=h;
+  $('view').textContent=S.view||'';
+  let ro='';
+  for(const t of [A,B]){
+    ro+=`<table class="ro"><tr><th colspan="3">${t.name}${t.human?' (sen)':' (yapay zeka)'} — Hücum: ${TA[t.att]} · Savunma: ${TD[t.def]} · Takım hype: ${teamHype(t)}</th></tr>`;
+    for(const p of t.pl){
+      const st=KEYS.map(k=>SN[k][0]+p.st[k]).join(' ')+(p.role==='GK'?` Y${p.st.yakin} U${p.st.uzak}`:'');
+      ro+=`<tr><td>${p.short} ${p.name}${p.perk?' <i>('+PERK[p.perk]+')</i>':''}${t.out.has(p.role)?' ✗':''}</td><td>${st}</td><td>${hs(p)}</td></tr>`;
+    }
+    ro+='</table>';
+  }
+  $('roster').innerHTML=ro;
+}
+
+// ---------- hamle çözümü ----------
+function roll(p){return{win:R()<p,txt:`[ihtimal %${Math.round(p*100)}]`};}
+// dönüş: {cont} aynı takımda devam | {turn:{car,phase,lane}} top el değiştirdi | {restart:{...}}
+async function resolveAct(att,def,act,resp){
+  const bl=S.ball,car=bl.car,f=bl.phase,k=act.k;
+  if(k==='sut')return resolveShot(att,def,car,act,resp);
+  const e=evalAct(att,def,car,act,resp),df=e.df;
+  if(k!=='kor')car.ks=0;
+  const dtxt=k==='cross'||!resp?'':` ${who(df)}: ${RESP[resp]}.`;
+  const head=`${who(car)} ${past[k](act)}!${dtxt}`;
+  const r=roll(e.p);
+  const lane=k==='lp'?HOME[act.to.role]:bl.lane;
+
+  if(k==='cross'){
+    const tgt=e.tgt;
+    if(r.win){
+      lost(df);if(isRisky(e.p))hypeUp(tgt);
+      log(`${head} ${who(tgt)} ile ${lc(who(df))} Hava düellosuna çıktı ${r.txt}. ${who(tgt)} kazandı ve şut çekiyor! ${hs(tgt)}`,cl(car,true));
+      S.ball={team:att,car:tgt,phase:4,lane:HOME[tgt.role]};
+      S.intent=null;S.support=null;
+      const sact={k:'sut',corner:bestCorner(att,def,tgt)};
+      const sresp=def.human?await humanDefend(att,def,tgt,sact):'B';
+      return resolveShot(att,def,tgt,sact,sresp);
+    }
+    stopped(tgt,df,isRisky(1-e.p));
+    if(R()<0.5){
+      log(`${head} ${who(tgt)} ile ${lc(who(df))} Hava düellosuna çıktı ${r.txt}. ${who(df)} uzaklaştırdı ve topu kaptı! ${who(tgt)}: ${hs(tgt)}`,cl(car,false));
+      return{turn:{car:df,phase:1,lane:bl.lane}};
+    }
+    log(`${head} ${who(tgt)} ile ${lc(who(df))} Hava düellosuna çıktı ${r.txt}. ${who(df)} uzaklaştırdı, top dışarı çıktı! ${who(tgt)}: ${hs(tgt)}`,cl(car,false));
+    return{restart:{team:def,role:'GK',phase:1,lane:1,why:`Top dışarı: ${lc(who(def.pl[0]))} topu oyuna sokuyor.`}};
+  }
+
+  if(!r.win){
+    stopped(car,df,isRisky(1-e.p));
+    if(k==='kor')car.ks++;
+    log(`${head} ${r.txt}. Başarısız! ${who(df)} topu kaptı. ${who(car)}: ${hs(car)} · ${who(df)}: ${hs(df)}`,cl(car,false));
+    return{turn:{car:df,phase:5-e.ph,lane}};
+  }
+  lost(df);
+  // Koru hype vermez; diğerleri yalnızca riskliyse (<%60) verir
+  const gives=k!=='kor'&&isRisky(e.p);
+  if(gives)hypeUp(car);
+  log(`${head} ${r.txt}. Başarılı. ${hs(car)}${k==='kor'?' (koru: hype yok)':gives?'':' (güvenli hamle, hype yok)'}`,cl(car,true));
+  S.support=null;
+  if(k==='sp'){S.ball={team:att,car:act.to,phase:spPhase(att,act.to,f),lane:HOME[act.to.role]};}
+  else if(k==='lp'){S.ball={team:att,car:act.to,phase:f+2,lane:HOME[act.to.role]};}
+  else if(k==='cal'){
+    bl.phase=Math.min(4,f+1);
+    if(def.pl.filter(p=>p.role!=='GK'&&!def.out.has(p.role)).length>1){def.out.add(df.role);log(`${who(df)} bu atakta düştü.`,cl(car,true));}
+    log(`${who(car)} bir faz ilerledi (Faz ${bl.phase}).`);
+  }else if(k==='ic'){
+    bl.lane=1;
+    log(`${who(car)} orta kulvara geçti.`);
+  }else{// koru: yerinde kal, hazır bir takım arkadaşı desteğe gelir
+    car.ks++;
+    const sup=att.pl.filter(p=>p!==car&&p.role!=='GK'&&ZP[att.zones[p.role]].includes(f)).sort((x,y)=>y.st.pas-x.st.pas)[0];
+    if(sup){S.support=sup;log(`${who(sup)} desteğe geldi: sonraki hamlede baskı -1.`);}
+  }
+  return{cont:true};
+}
+
+async function resolveShot(att,def,car,act,resp){
+  const bl=S.ball,f=bl.phase,st=S.stats[key(att)];
+  const e=shotEval(att,def,car,act.corner,resp),df=e.df,gk=e.gk;
+  st.shots++;
+  car.ks=0;
+  const blocked=resp==='B';
+  const head=`${who(car)} ${past.sut(act)}!${blocked?` ${who(df)}: ${RESP.B}.`:''}`;
+  const r=roll(e.p);
+  if(r.win){
+    lost(gk);if(blocked)lost(df);
+    const gives=isRisky(e.p);
+    if(gives)hypeUp(car);
+    att.score++;st.ont++;st.goals++;
+    log(`GOL! ${head} ${r.txt}. Skor: ${S.A.name} ${S.A.score} - ${S.B.score} ${S.B.name}. ${who(car)}: ${hs(car)}${gives?'':' (güvenli şut, hype yok)'}`,att===S.A?'goalok':'goalbad');
+    for(const p of att.pl)hypeUp(p);
+    log(`${att===S.A?'Tüm takımımız':'Rakibin tüm takımı'} +1 hype aldı.`,cl(car,true));
+    S.support=null;
+    return{restart:{team:def,role:'MID',phase:2,lane:1,why:`Santra: ${def===S.A?'biz':'rakip'} başlıyor.`}};
+  }
+  const share=blocked?(e.pNo-e.p)/(1-e.p):0;
+  if(R()<share){
+    lost(gk);
+    stopped(car,df,isRisky(1-e.p));
+    if(R()<0.5){
+      log(`${head} ${r.txt}. ${who(df)} şutu engelledi ve topu kaptı! ${who(car)}: ${hs(car)}`,cl(car,false));
+      return{turn:{car:df,phase:5-f,lane:bl.lane}};
+    }
+    log(`${head} ${r.txt}. ${who(df)} şutu engelledi, top dışarı çıktı! ${who(car)}: ${hs(car)}`,cl(car,false));
+    return{restart:{team:def,role:'GK',phase:1,lane:1,why:`Kale vuruşu: ${lc(who(gk))} topu oyuna sokuyor.`}};
+  }
+  if(blocked)lost(df);
+  st.ont++;
+  stopped(car,gk,isRisky(1-e.p));
+  log(`${head} ${r.txt}. ${who(gk)} kurtardı! ${who(gk)}: ${hs(gk)} · ${who(car)}: ${hs(car)}`,cl(car,false));
+  return{restart:{team:def,role:'GK',phase:1,lane:1,why:`${who(gk)} topu oyuna sokuyor.`}};
+}
+
+// ---------- seçim menüleri ----------
+// Hücum ve savunma GİZLİ ve AYNI ANDA seçilir: kimse diğerinin hamlesini görmez, sonra ikisi birden açılır.
+const canShoot=()=>S.ball.phase===4||(S.ball.phase===3&&S.ball.lane===1);
+const respSet=()=>canShoot()?['K','Y','P','B']:['K','Y','P'];
+const RDESC={
+  K:'Koruya karşı güçlü (−20), çalım ve içeri kata karşı zayıf (+20). Hız ile müdahale.',
+  Y:'Çalım ve içeri katı keser (−20), koruya karşı zayıf (+20).',
+  P:'Uzun pası keser (−20), kısa pas ve çalıma karşı biraz zayıf (+10).',
+  B:'Şutu bloklar (−20), başka hamleye etkisi yok.'
+};
+// her hamle türü için saldırganın en iyi versiyonu (en iyi hedef / köşe), savunma cevabı hesaba katılmadan
+function bestByKind(att,def,car){
+  const by={};
+  for(const a of candidates(att,car)){const p=ev(att,def,car,a,null).p;if(!by[a.k]||p>by[a.k].p)by[a.k]={a,p};}
+  return by;
+}
+const range=(att,def,car,a)=>{const ps=respSet().map(r=>ev(att,def,car,a,r).p);return`rakip cevabına göre %${Math.round(Math.min(...ps)*100)}–%${Math.round(Math.max(...ps)*100)}`;};
+// bilinen şut (orta sonrası kafa) için savunma
+async function humanDefend(att,def,car,act){
+  const keys=['B','K'];
+  const es=keys.map(r=>ev(att,def,car,act,r));
+  const i=await choose(`SAVUNMA: ${who(car)} kafayla şut çekecek!`,`Karşındaki: ${who(es[0].df)}. Yüzde = durdurma ihtimali.`,
+    keys.map((r,j)=>({label:RESP[r],pct:Math.round((1-es[j].p)*100),note:es[j].text})));
+  return keys[i];
+}
+// savunmada rakibin hamlesini bilmeden cevap seçeriz
+async function humanGuess(att,def,car){
+  const set=respSet(),by=bestByKind(att,def,car),ks=Object.keys(by),st=car.st;
+  const opts=set.map(r=>({label:RESP[r],note:`${RDESC[r]}\nDurdurma: ${ks.map(k=>`${kindName[k]} %${Math.round((1-ev(att,def,car,by[k].a,r).p)*100)}`).join(' · ')}`}));
+  const i=await choose(`SAVUNMA: ${who(car)} topta (Faz ${S.ball.phase}, ${LN[S.ball.lane]})`,
+    `Ne yapacağını bilmiyorsun, tahmin et. Pas ${st.pas} · Çalım ${st.calim} · Güç ${st.guc} · Şut ${st.sut} · Hava ${st.hava} · ${hs(car)}. Olası hamleler: ${ks.map(k=>kindName[k]).join(', ')}.`,opts);
+  return set[i];
+}
+async function humanAttack(att,def,car){
+  const cs=candidates(att,car);
+  const by=k=>cs.filter(a=>a.k===k);
+  const opts=[],kinds=[];
+  const add=(k,note)=>{
+    const L=by(k);if(!L.length)return;
+    let best=null;
+    for(const a of L){const e=ev(att,def,car,a,null);if(!best||e.p>best.e.p)best={a,e};}
+    kinds.push(k);
+    opts.push({label:kindName[k],pct:Math.round(best.e.p*100),note:note+(k==='cross'?` (${best.e.tgt.name})`:'')+`\n${range(att,def,car,best.a)} · ${best.e.text}`});
+  };
+  add('sp','aynı ya da bir ileri faz, hazır oyuncuya; en iyi hedefin yüzdesi');
+  add('lp','iki faz ileri, Hava düellosu; en iyi hedefin yüzdesi');
+  add('cal','başarılıysa bir faz ilerlersin, savunmacı bu atakta düşer');
+  add('kor','yerinde kalırsın, bir takım arkadaşı desteğe gelir; hype yok; art arda -15');
+  add('ic','çalım düellosu; başarılıysa orta kulvara geçersin');
+  add('cross','ceza sahasında Hava düellosu; kazanırsan şut, kaybedersen uzaklaştırma');
+  add('sut',S.ball.phase===3?'Faz 3 orta kulvar (-2); köşeyi sonra seçeceksin':'köşeyi sonra seçeceksin');
+  const df=engage(def,S.ball.phase,S.ball.lane);
+  const i=await choose(`${who(car)} topta (Faz ${S.ball.phase}, ${LN[S.ball.lane]}) — ne yapacak?`,
+    `Karşındaki: ${who(df)} (Savunma ${df.st.sav}, Hız ${df.st.hiz}, ${hs(df)}). Rakip cevabını aynı anda, gizlice seçiyor; geçmiş hamlelerinden seni okumaya çalışır. Yüzde: nötr cevaba göre.`,opts);
+  const k=kinds[i];
+  if(k==='sp'||k==='lp'){
+    const L=by(k).map(a=>({a,e:ev(att,def,car,a,null)}));
+    const j=await ask(`${kindName[k]} hedefi`,'Hazır oyuncular: taktiğe göre o faz ve komşu fazdakiler.',
+      L.map(x=>({label:`${x.a.to.name} (${x.a.to.short}) · ${LN[HOME[x.a.to.role]]}`,pct:Math.round(x.e.p*100),note:`${range(att,def,car,x.a)} · ${x.e.text} | ${hs(x.a.to)}`})));
+    return L[j].a;
+  }
+  if(k==='sut'){
+    const gk=def.pl[0];
+    const L=CORNERS.map(c=>({a:{k:'sut',corner:c},e:shotEval(att,def,car,c,null)}));
+    const j=await ask('Şut köşesi',`Kaleci ${gk.name}: yakın ${gk.st.yakin}, uzak ${gk.st.uzak}${gk.perk?' ('+PERK[gk.perk]+')':''}. Üst köşe: Şut statı, kaleci -1. Alt köşe: Şut ve Güç ortalaması. Rakip blok yaparsa -20.`,
+      L.map(x=>({label:CN[x.a.corner][0].toUpperCase()+CN[x.a.corner].slice(1),pct:Math.round(x.e.p*100),note:x.e.text})));
+    return L[j].a;
+  }
+  return by(k)[0];
+}
+
+// ---------- yapay zeka ----------
+// hamlenin hücum değeri (ilerleme / gole yakınlık)
+function actVal(att,a,f){
+  if(a.k==='sp')return spPhase(att,a.to,f)>f?1.4:0.8;
+  if(a.k==='lp')return 1.8;
+  if(a.k==='cal')return f<4?2:1;
+  if(a.k==='ic')return 1.2;
+  if(a.k==='cross')return 3;
+  if(a.k==='sut')return f===4?4:3;
+  return 0.3;
+}
+// gözlem geçmişi: her takım rakibin hamle türlerini (seenK) ve savunma cevaplarını (seenR) sayar
+const share=(o,k,keys)=>o[k]/keys.reduce((n,x)=>n+o[x],0);
+// AI hücum: rakibin geçmiş cevaplarına göre beklenen başarı
+const expP=(att,def,car,a)=>{const set=respSet();return set.reduce((n,r)=>n+share(att.seenR,r,set)*ev(att,def,car,a,r).p,0);};
+function aiAttack(att,def,car){
+  const f=S.ball.phase;
+  const c=candidates(att,car).map(a=>({a,p:expP(att,def,car,a),v:actVal(att,a,f)}));
+  // risk iştahı: hype yüksekse ve skor gerideyse artar (üs küçüldükçe ihtimal yerine değer ağır basar)
+  const risk=Math.min(0.6,0.1+(att.score<def.score?0.25:0)+(car.flame?0.2:car.hype*0.07));
+  if(R()<0.1)return c[rnd(c.length)].a;
+  let best=null,bu=-1;
+  for(const x of c){
+    const u=Math.pow(x.p,1-risk)*x.v*(0.7+R()*0.6);
+    if(u>bu){bu=u;best=x;}
+  }
+  return best.a;
+}
+// AI savunma: saldırganın hamlesini bilmeden tahmin eder.
+// Her hamle türünün çekiciliği (başarı × değer) ile rakibin şimdiye kadarki tercihleri birleşir;
+// beklenen başarıyı en çok düşüren cevap ağırlıklı rastgele seçilir (karışık strateji, okunması zor).
+function aiGuessResp(att,def,car){
+  const set=respSet(),by=bestByKind(att,def,car),ks=Object.keys(by),f=S.ball.phase;
+  const all=Object.keys(def.seenK);
+  const w={};let W=0;
+  for(const k of ks){w[k]=by[k].p*actVal(att,by[k].a,f)*(1+3*share(def.seenK,k,all));W+=w[k];}
+  if(R()<0.15)return set[rnd(set.length)];
+  const e=set.map(r=>ks.reduce((n,k)=>n+w[k]/W*ev(att,def,car,by[k].a,r).p,0));
+  const m=Math.min(...e),q=e.map(x=>Math.exp(-(x-m)/0.03)),Q=q.reduce((a,b)=>a+b,0);
+  let x=R()*Q;
+  for(let i=0;i<set.length;i++){x-=q[i];if(x<=0)return set[i];}
+  return set[set.length-1];
+}
+
+// ---------- taktik (sadece ölü toplarda) ----------
+async function tacticPhase(){
+  const me=S.A,ai=S.B;
+  if(me.human){
+  const i=await ask('Ölü top — hücum taktiği (top bizdeyken)',`Şu an: ${TA[me.att]}. Top el değiştirince ayar otomatik değişir.`,[
+    {label:'Dengeli',note:'İleride SF + 1 kanat; geride 2 savunma + OS; diğer kanat ortada.'},
+    {label:'Kanatlar ileri',note:'İleride SF + 2 kanat; geride 2 savunma; OS ortada.'},
+    {label:'Yüklen',note:'İleride SF + 2 kanat + OS; geride 1 savunma. Top kaybında rakip kontrası az savunmacıyla karşılaşır.'}
+  ]);
+  me.att=['bal','fwd','all'][i];
+  const j=await ask('Ölü top — savunma taktiği (top rakipteyken)',`Şu an: ${TD[me.def]}.`,[
+    {label:'Ön alan baskısı',note:'Rakibin Faz 1-2\'sinde baskı +2; bizim yarımızda savunmacı az.'},
+    {label:'Dengeli',note:'Standart dizilim.'},
+    {label:'Geri çekil',note:'Rakibin Faz 1-2\'sinde baskı yok; bizim yarımızda (rakibin Faz 3-4\'ü) savunmacı fazla.'}
+  ]);
+  me.def=['press','bal','back'][j];
+  }else aiTactic(me);
+  aiTactic(ai);
+  log(`Taktikler: ${me.name} hücum "${TA[me.att]}" / savunma "${TD[me.def]}"; ${ai.name} hücum "${TA[ai.att]}" / savunma "${TD[ai.def]}"`);
+}
+// yapay zeka taktiği: skora göre (gerideyse yüklenir, öndeyse geri çekilir)
+function aiTactic(ai){
+  const diff=ai.score-other(ai).score,r=R(),r2=R();
+  if(diff<0){ai.att=r<.45?'all':r<.8?'fwd':'bal';ai.def=r2<.5?'press':r2<.8?'bal':'back';}
+  else if(diff>0){ai.att=r<.5?'bal':r<.8?'fwd':'all';ai.def=r2<.45?'back':r2<.85?'bal':'press';}
+  else{ai.att=r<.4?'bal':r<.8?'fwd':'all';ai.def=r2<.3?'press':r2<.7?'bal':'back';}
+}
+function resetState(){
+  S.A.out.clear();S.B.out.clear();
+  S.trans=false;S.support=null;
+  for(const p of S.A.pl.concat(S.B.pl))p.ks=0;
+}
+// sıfırlama: gol, kurtarış, aut. Top verilen takımın verilen rolünde başlar
+async function restart(team,role,phase,lane,why){
+  log(why);
+  await tacticPhase();
+  resetState();
+  attackZones(team,lane);defZones(other(team));
+  S.ball={team,car:team.pl.find(p=>p.role===role),phase,lane};
+  S.intent=null;S.view=null;
+  render();
+}
+
+async function playMatch(){
+  S.t0=Date.now();
+  render();
+  await restart(S.A,'MID',2,1,'Hakem düdüğü, maç başlıyor! Santra bizde.');
+  while(S.min<90){
+    const bl=S.ball,att=bl.team,def=other(att),car=bl.car;
+    S.intent=null;S.view=null;
+    let act,resp;
+    // iki taraf da gizli seçer: AI'ın seçimi insana gösterilmeden önce yapılır
+    if(att.human){
+      resp=aiGuessResp(att,def,car);
+      render();
+      act=await humanAttack(att,def,car);
+    }else{
+      render();
+      idle(`${full(car)} düşünüyor...`);await sleep(500);
+      act=aiAttack(att,def,car);
+      resp=def.human?await humanGuess(att,def,car):aiGuessResp(att,def,car);
+    }
+    if(act.k!=='cross')log(`${ours(car)?'Sen':'Rakip'}: ${kindName[act.k]} · ${ours(car)?'Rakip':'Sen'}: ${RESP[resp]}`);
+    // gözlem: savunma hücumun türünü, hücum savunmanın cevabını öğrenir
+    def.seenK[act.k]++;att.seenR[resp]++;
+    S.min+=3;// her an 3 dakika
+    S.stats[key(att)].lanes[bl.lane]++;
+    idle('...');
+    const res=await resolveAct(att,def,act,resp);
+    S.intent=null;S.view=null;
+    // süre dolduysa yeniden başlatma (ve taktik sorusu) yok
+    if(res.restart){const q=res.restart;if(S.min<90)await restart(q.team,q.role,q.phase,q.lane,q.why);}
+    else if(res.turn){
+      // top kaptırıldı: rakip aynı yerden ayna olarak başlar; eski hücum dizilişi önlerindeki savunmacıları belirler
+      const q=res.turn,nt=q.car.team;
+      S.stats[key(nt)].wins++;
+      S.A.out.clear();S.B.out.clear();S.support=null;
+      for(const p of S.A.pl.concat(S.B.pl))p.ks=0;
+      S.ball={team:nt,car:q.car,phase:q.phase,lane:q.lane};
+      attackZones(nt,q.lane);
+      S.trans=true;
+    }else if(S.trans){S.trans=false;defZones(def);}
+    render();
+    if(!att.human)await sleep(400);
+  }
+  S.ball=null;render();
+}
+async function main(){
+  if(SIM)return runSim(SIM);
+  await playMatch();
+  const w=S.A.score>S.B.score?'Mavi kazandı!':S.A.score<S.B.score?'Kırmızı kazandı!':'Berabere!';
+  const el=Math.round((Date.now()-S.t0)/1000),rt=`${Math.floor(el/60)} dk ${el%60} sn`;
+  const txt=`MAÇ BİTTİ — ${S.A.name} ${S.A.score} - ${S.B.score} ${S.B.name} · ${w}`;
+  log(txt,S.A.score>=S.B.score?'goalok':'goalbad');
+  const P=$('prompt');P.innerHTML='';
+  const h=document.createElement('h3');h.textContent=txt;P.append(h);
+  const a=S.stats.A,b=S.stats.B;
+  const rows=[['Şut',a.shots,b.shots],['İsabetli şut',a.ont,b.ont],['Gol',a.goals,b.goals],['Top kazanma',a.wins,b.wins],['Sol kulvarda hamle',a.lanes[0],b.lanes[0]],['Orta kulvarda hamle',a.lanes[1],b.lanes[1]],['Sağ kulvarda hamle',a.lanes[2],b.lanes[2]]];
+  const tb=document.createElement('table');tb.className='ro';
+  tb.innerHTML=`<tr><th>İstatistik</th><th>${S.A.name}</th><th>${S.B.name}</th></tr>`+rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('')+`<tr><td>Maç saati</td><td colspan="2">${S.min} dk</td></tr><tr><td>Gerçek geçen süre</td><td colspan="2">${rt}</td></tr>`;
+  P.append(tb);
+  const nb=(txt,q)=>{const b=document.createElement('button');b.textContent=txt;b.onclick=()=>{location.href=location.pathname+q;};P.append(b);};
+  nb('Yeni maç','');
+  nb(`Aynı seed ile tekrar (${SEED}) — aynı seçimleri yaparsan maç aynı geçer`,`?seed=${SEED}`);
+  log(`İstatistik — ${rows.map(r=>`${r[0]}: ${r[1]}-${r[2]}`).join(' · ')} · Gerçek süre: ${rt}`);
+}
+// AI-AI denge testi: index.html?sim=1000 (isteğe bağlı &seed=)
+async function runSim(n){
+  const res={A:0,D:0,B:0},g={A:0,B:0},sh={A:0,B:0},sc={};
+  for(let i=0;i<n;i++){
+    newState();
+    await playMatch();
+    const a=S.A.score,b=S.B.score;
+    res[a>b?'A':a<b?'B':'D']++;g.A+=a;g.B+=b;
+    sh.A+=S.stats.A.shots;sh.B+=S.stats.B.shots;
+    sc[`${a}-${b}`]=(sc[`${a}-${b}`]||0)+1;
+  }
+  const pc=x=>`%${Math.round(x/n*100)}`,av=x=>fmt(x/n);
+  const top=Object.entries(sc).sort((x,y)=>y[1]-x[1]).slice(0,8).map(([k,v])=>`${k} (${pc(v)})`).join(', ');
+  const lines=[
+    `AI-AI denge testi: ${n} maç · seed ${SEED}`,
+    `Mavi kazandı ${pc(res.A)} · Berabere ${pc(res.D)} · Kırmızı kazandı ${pc(res.B)}`,
+    `Ortalama gol: Mavi ${av(g.A)} - ${av(g.B)} Kırmızı`,
+    `Ortalama şut: Mavi ${av(sh.A)} - ${av(sh.B)} Kırmızı`,
+    `En sık skorlar: ${top}`,
+    `Not: Mavi'yi, savunmada rakip hamlesini görüp en iyi cevabı seçen, hücumda Kırmızı ile aynı AI'ı kullanan bir model oynuyor.`
+  ];
+  console.log(lines.join('\n'));
+  const P=$('prompt');P.innerHTML='';
+  lines.forEach((t,i)=>{const d=document.createElement(i?'div':'h3');d.textContent=t;P.append(d);});
+}
+main();
+</script>
+</body>
+</html>
