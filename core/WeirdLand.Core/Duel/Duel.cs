@@ -223,6 +223,15 @@ namespace WeirdLand.Core.Duels
             return Outcome.HasValue;
         }
 
+        /// <summary>Test hook: end the duel immediately with the given outcome.</summary>
+        internal void ForceOutcome(DuelOutcome o, PlayerDef passTarget = null)
+        {
+            Guard();
+            _ev = new List<GameEvent>();
+            PassTarget = passTarget;
+            Finish(o);
+        }
+
         private void Finish(DuelOutcome o)
         {
             Outcome = o;
