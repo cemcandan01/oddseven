@@ -101,7 +101,7 @@
             "kisa_pas",
             "calim",
             "yapis",
-            "pas_yolunu_kapat",
+            "kayarak_mudahale",
             "orta_saha_kirici",
             "sert_girisim"
           ]
@@ -128,7 +128,7 @@
             "yakin_kose",
             "geri_don_savun",
             "topu_sakla",
-            "kolunu_uzat"
+            "kayarak_mudahale"
           ]
         },
         {
@@ -153,7 +153,7 @@
             "yakin_kose",
             "geri_don_savun",
             "topu_sakla",
-            "kolunu_uzat"
+            "kayarak_mudahale"
           ]
         },
         {
@@ -305,11 +305,11 @@
           },
           "deck": [
             "calim",
-            "ortala",
+            "ici_kes",
             "kanat_kosusu",
             "yakin_kose",
             "geri_don_savun",
-            "topu_sakla",
+            "kayarak_mudahale",
             "kolunu_uzat"
           ]
         },
@@ -330,11 +330,11 @@
           },
           "deck": [
             "calim",
-            "ortala",
+            "ici_kes",
             "kanat_kosusu",
             "yakin_kose",
             "geri_don_savun",
-            "topu_sakla",
+            "kayarak_mudahale",
             "kolunu_uzat"
           ]
         },
@@ -488,7 +488,7 @@
           },
           "deck": [
             "calim",
-            "ici_kes",
+            "ortala",
             "kanat_kosusu",
             "yakin_kose",
             "ust_kose",
@@ -513,7 +513,7 @@
           },
           "deck": [
             "calim",
-            "ici_kes",
+            "ortala",
             "kanat_kosusu",
             "yakin_kose",
             "ust_kose",
@@ -675,7 +675,7 @@
           },
           "deck": [
             "cizgiye_in",
-            "ici_kes",
+            "calim",
             "ust_kose",
             "plase",
             "kanat_kosusu",
@@ -701,7 +701,7 @@
           },
           "deck": [
             "cizgiye_in",
-            "ici_kes",
+            "calim",
             "ust_kose",
             "plase",
             "kanat_kosusu",

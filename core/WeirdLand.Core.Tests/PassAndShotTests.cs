@@ -47,7 +47,7 @@ namespace WeirdLand.Core.Tests
             Assert.That(DuelRules.PassChance(Comb(4, 10, 10), Comb(0, 5, 10)), Is.EqualTo(0.69).Within(1e-9));
             Assert.That(DuelRules.PassChance(Comb(4, 10, 10), Comb(0, 10, 10, true)), Is.EqualTo(0.69).Within(1e-9));
             Assert.That(DuelRules.PassChance(Comb(4, 5, 10), Comb(0, 10, 10)), Is.EqualTo(0.415).Within(1e-9));
-            Assert.That(DuelRules.EnemyPassThreshold, Is.EqualTo(0.6));
+            Assert.That(DuelRules.EnemyPassThreshold, Is.EqualTo(0.65));
             Assert.That(DuelRules.PassCost, Is.EqualTo(1));
         }
 
@@ -141,7 +141,7 @@ namespace WeirdLand.Core.Tests
         [Test]
         public void EnemyCarrier_PassesWhenChanceHigh()
         {
-            // Enemy Passing 6 -> 0.66 >= 0.6. Best target = highest Dribbling + Shooting.
+            // Enemy Passing 6 -> 0.66 >= 0.65. Best target = highest Dribbling + Shooting.
             Duel Build(uint seed, bool targets) => MakeField(false, 0, 6, seed, 0, s =>
             {
                 if (!targets) return;
@@ -192,11 +192,11 @@ namespace WeirdLand.Core.Tests
         [Test]
         public void ShotDuel_GoalWhenKaleZero_AttackerWon()
         {
-            var d = MakeShot(true, new List<CardInstance> { Inst("blast", 1, CardRole.Attack, AtCorner(Dmg(20), Corner.Near)) },
+            var d = MakeShot(true, new List<CardInstance> { Inst("blast", 1, CardRole.Attack, AtCorner(Dmg(25), Corner.Near)) },
                 new List<CardInstance>());
             d.Begin();
             Assert.That(d.MaxTurns, Is.EqualTo(2));
-            Assert.That(d.Enemy.Hp, Is.EqualTo(14));
+            Assert.That(d.Enemy.Hp, Is.EqualTo(18)); // KaleBase 12 + Near3 + Far3
             var ev = d.PlayCard(0);
             Assert.That(d.Enemy.Hp, Is.EqualTo(0));
             Assert.That(d.Outcome, Is.EqualTo(DuelOutcome.AttackerWon));

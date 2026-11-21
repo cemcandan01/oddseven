@@ -17,7 +17,9 @@ namespace WeirdLand.Core.Match
         public const int TacticBonus = 10;
         public const int EnemyAlevMomentum = 2;
         public const int DefensiveHpBonus = 3;
-        public const int TierPowerPercent = 10;
+        /// <summary>Enemy damage scale at tier 1. The enemy plays one card per turn, the user up to four.</summary>
+        public const int EnemyPowerBasePercent = 260;
+        public const int TierPowerPercent = 0;
         public const int MatchMinutes = 90;
 
         public static int TacticValue(Tactic t) => t == Tactic.Attacking ? TacticBonus : t == Tactic.Defensive ? -TacticBonus : 0;
@@ -36,6 +38,6 @@ namespace WeirdLand.Core.Match
 
         public static double UserAttackChance(int u) => 0.5 + u / 250.0;
 
-        public static int PowerScalePercent(int tier) => 100 + TierPowerPercent * (tier - 1);
+        public static int PowerScalePercent(int tier) => EnemyPowerBasePercent + TierPowerPercent * (tier - 1);
     }
 }

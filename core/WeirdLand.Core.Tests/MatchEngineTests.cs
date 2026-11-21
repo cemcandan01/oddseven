@@ -290,7 +290,9 @@ namespace WeirdLand.Core.Tests
         {
             var e = Engine(tier: 3);
             e.StartNextDuel();
-            Assert.That(e.CurrentDuel.Enemy.PowerScalePercent, Is.EqualTo(120));
+            // EnemyPowerBasePercent 260 + TierPowerPercent 0 * (tier - 1): tier difficulty comes from team data.
+            Assert.That(e.CurrentDuel.Enemy.PowerScalePercent, Is.EqualTo(260));
+            Assert.That(MatchRules.PowerScalePercent(1), Is.EqualTo(260));
 
             var d = Engine();
             d.SetTactic(false, Tactic.Defensive);

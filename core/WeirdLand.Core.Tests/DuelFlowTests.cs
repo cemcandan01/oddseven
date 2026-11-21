@@ -37,8 +37,8 @@ namespace WeirdLand.Core.Tests
         {
             var a = Make(DuelKind.Field, true, Many(6, CardRole.Both), Many(6, CardRole.Both));
             a.Begin();
-            Assert.That(a.User.Hp, Is.EqualTo(17)); // 10 + Power3 + Dribbling4
-            Assert.That(a.Enemy.Hp, Is.EqualTo(17)); // 10 + Defending4 + Power3
+            Assert.That(a.User.Hp, Is.EqualTo(12)); // KontrolBase 5 + Power3 + Dribbling4
+            Assert.That(a.Enemy.Hp, Is.EqualTo(21)); // DengeBase 14 + Defending4 + Power3
             Assert.That(a.Turn, Is.EqualTo(1));
             Assert.That(a.MaxTurns, Is.EqualTo(3));
         }
@@ -117,7 +117,7 @@ namespace WeirdLand.Core.Tests
         [Test]
         public void LethalDamage_EndsDuel_AttackerWon_StopsRemainingEffects()
         {
-            var deck = new List<CardInstance> { Inst("kill", 1, CardRole.Both, Dmg(20), Blk(5)) };
+            var deck = new List<CardInstance> { Inst("kill", 1, CardRole.Both, Dmg(40), Blk(5)) };
             var d = Make(DuelKind.Field, true, deck, new List<CardInstance>());
             d.Begin();
             var ev = d.PlayCard(0);
@@ -137,11 +137,11 @@ namespace WeirdLand.Core.Tests
             Assert.That(d.Intent.Card.Def.Id, Is.EqualTo("hit"));
             Assert.That(d.Intent.PassTarget, Is.Null);
             Assert.That(d.IncomingDamage(), Is.EqualTo(5));
-            Assert.That(d.User.Hp, Is.EqualTo(17));
-            var end = d.EndTurn();
             Assert.That(d.User.Hp, Is.EqualTo(12));
+            var end = d.EndTurn();
+            Assert.That(d.User.Hp, Is.EqualTo(7));
             Assert.That(end, Does.Contain(new CardPlayed(false, "hit")));
-            Assert.That(end, Does.Contain(new DamageDealt(true, 5, 0, 12)));
+            Assert.That(end, Does.Contain(new DamageDealt(true, 5, 0, 7)));
         }
 
         [Test]
@@ -153,7 +153,7 @@ namespace WeirdLand.Core.Tests
             Assert.That(d.Intent.PassTarget, Is.Null);
             Assert.That(d.IncomingDamage(), Is.EqualTo(0));
             d.EndTurn();
-            Assert.That(d.User.Hp, Is.EqualTo(17));
+            Assert.That(d.User.Hp, Is.EqualTo(12));
         }
 
         [Test]
@@ -162,7 +162,7 @@ namespace WeirdLand.Core.Tests
             var enemy = new List<CardInstance>
             {
                 Inst("wall", 0, CardRole.Both, Blk(100)),
-                Inst("kill", 0, CardRole.Both, Dmg(17)),
+                Inst("kill", 0, CardRole.Both, Dmg(12)),
             };
             var d = Make(DuelKind.Field, true, Many(6, CardRole.Both), enemy);
             d.Begin();
@@ -228,7 +228,7 @@ namespace WeirdLand.Core.Tests
         [Test]
         public void Commands_AfterOutcome_Throw()
         {
-            var deck = new List<CardInstance> { Inst("kill", 1, CardRole.Both, Dmg(20)), Inst("x", 0, CardRole.Both, Blk(1)) };
+            var deck = new List<CardInstance> { Inst("kill", 1, CardRole.Both, Dmg(40)), Inst("x", 0, CardRole.Both, Blk(1)) };
             var d = Make(DuelKind.Field, true, deck, new List<CardInstance>());
             d.Begin();
             d.PlayCard(d.User.Hand.FindIndex(c => c.Def.Id == "kill"));
@@ -244,8 +244,8 @@ namespace WeirdLand.Core.Tests
         {
             var d = Make(DuelKind.Shot, true, Many(6, CardRole.Both), Many(6, CardRole.Both), s => s.DefenderMaxHpBonus = 2);
             d.Begin();
-            Assert.That(d.User.Hp, Is.EqualTo(11)); // 8 + Power3
-            Assert.That(d.Enemy.Hp, Is.EqualTo(16)); // 8 + 3 + 3 + 2
+            Assert.That(d.User.Hp, Is.EqualTo(13)); // ShooterKontrolBase 10 + Power3
+            Assert.That(d.Enemy.Hp, Is.EqualTo(20)); // KaleBase 12 + Near3 + Far3 + bonus 2
         }
 
         [Test]

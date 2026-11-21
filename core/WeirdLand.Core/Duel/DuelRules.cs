@@ -14,7 +14,7 @@ namespace WeirdLand.Core.Duels
         public const double UncoveredCornerMult = 2;
         /// <summary>Corner (shot) cards against a non-goalkeeper target.</summary>
         public const double CornerVsFieldMult = 0.5;
-        public const double EnemyPassThreshold = 0.6;
+        public const double EnemyPassThreshold = 0.65;
         public const int PassCost = 1;
 
         public static double PassChance(Combatant carrier, Combatant defender)
@@ -36,9 +36,14 @@ namespace WeirdLand.Core.Duels
             }
         }
 
-        public static int KontrolMax(Stats s) => 10 + s.Power + s.Dribbling;
-        public static int DengeMax(Stats s) => 10 + s.Defending + s.Power;
-        public static int ShooterKontrolMax(Stats s) => 8 + s.Power;
-        public static int KaleMax(Stats gk) => 8 + gk.Near + gk.Far;
+        public const int KontrolBase = 5;
+        public const int DengeBase = 14;
+        public const int ShooterKontrolBase = 10;
+        public const int KaleBase = 12;
+
+        public static int KontrolMax(Stats s) => KontrolBase + s.Power + s.Dribbling;
+        public static int DengeMax(Stats s) => DengeBase + s.Defending + s.Power;
+        public static int ShooterKontrolMax(Stats s) => ShooterKontrolBase + s.Power;
+        public static int KaleMax(Stats gk) => KaleBase + gk.Near + gk.Far;
     }
 }
