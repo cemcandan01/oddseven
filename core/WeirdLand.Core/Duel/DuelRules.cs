@@ -12,6 +12,8 @@ namespace WeirdLand.Core.Duels
         public const double TiredMult = 0.75;
         public const double NonCornerShotMult = 0.5;
         public const double UncoveredCornerMult = 2;
+        /// <summary>Corner (shot) cards against a non-goalkeeper target.</summary>
+        public const double CornerVsFieldMult = 0.5;
         public const double EnemyPassThreshold = 0.6;
         public const int PassCost = 1;
 

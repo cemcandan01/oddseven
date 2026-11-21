@@ -38,6 +38,11 @@ namespace WeirdLand.Core.Duels
                         break;
                 }
             }
+            else if (e.Corner != Corner.None)
+            {
+                // A shot aimed at a corner is a poor weapon against an outfield player.
+                d = Math.Floor(d * DuelRules.CornerVsFieldMult);
+            }
 
             d = Math.Floor(d * src.PowerScalePercent / 100.0);
             return d < 0 ? 0 : (int)d;

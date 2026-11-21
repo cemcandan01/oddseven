@@ -41,6 +41,12 @@ namespace WeirdLand.Core.Tests
         [Test] public void Shot_UncoveredCorner_Doubled() { gk.Player.Stats.Far = 2; gk.Statuses[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(8), Corner.Far)), Is.EqualTo(12)); }
         [Test] public void Shot_CoveredCorner_NotDoubled() { gk.Player.Stats.Near = 2; gk.Statuses[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(8), Corner.Near)), Is.EqualTo(6)); }
         [Test] public void Shot_Top_NoReductionNoDouble() { gk.Statuses[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(6), Corner.Top)), Is.EqualTo(6)); }
+        [Test] public void CornerCard_VsFieldPlayer_Halved() => Assert.That(Compute(AtCorner(Dmg(9), Corner.Near)), Is.EqualTo(4));
+        [Test] public void CornerCard_TopVsFieldPlayer_Halved() => Assert.That(Compute(AtCorner(Dmg(8), Corner.Top)), Is.EqualTo(4));
+        [Test]
+        public void CornerCard_VsNonGkInShotDuel_Halved()
+            => Assert.That(EffectResolver.ComputeDamage(AtCorner(Dmg(8), Corner.Far), src, tgt, DuelKind.Shot), Is.EqualTo(4));
+        [Test] public void NonCornerCard_VsFieldPlayer_Full() => Assert.That(Compute(Dmg(9)), Is.EqualTo(9));
         [Test] public void PowerScale_Applies() { src.PowerScalePercent = 120; Assert.That(Compute(Dmg(10)), Is.EqualTo(12)); }
         [Test] public void Damage_NeverNegative() { gk.Player.Stats.Near = 9; Assert.That(ComputeShot(AtCorner(Dmg(2), Corner.Near)), Is.EqualTo(0)); }
 
