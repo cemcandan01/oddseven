@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Batch-mode wrapper for the WeirdLand Unity project.
-# Usage: tools/unity.sh <setup|tests [editmode|playmode|all]>
+# Usage: tools/unity.sh <setup|prefabs|tests [editmode|playmode|all]>
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,7 +14,7 @@ PROJECT="$ROOT/unity"
 LOGS="$PROJECT/Logs"
 
 usage() {
-    echo "Usage: tools/unity.sh <setup|tests [editmode|playmode|all]>" >&2
+    echo "Usage: tools/unity.sh <setup|prefabs|tests [editmode|playmode|all]>" >&2
     exit 64
 }
 
@@ -39,6 +39,18 @@ cmd_setup() {
     if [ $code -ne 0 ]; then
         echo "setup failed (exit $code). Last 40 log lines:"
         tail -n 40 "$LOGS/setup.log"
+    fi
+    return $code
+}
+
+cmd_prefabs() {
+    "$UNITY_EXE" -batchmode -projectPath "$(winpath "$PROJECT")"         -executeMethod WeirdLand.Unity.EditorTools.PrefabBuilder.BuildAll -quit         -logFile "$(winpath "$LOGS/prefabs.log")"
+    local code=$?
+    if [ $code -ne 0 ]; then
+        echo "prefabs failed (exit $code). Last 40 log lines:"
+        tail -n 40 "$LOGS/prefabs.log"
+    else
+        echo "prefabs: built (log: $LOGS/prefabs.log)"
     fi
     return $code
 }
@@ -98,6 +110,7 @@ cmd_tests() {
 command="$1"; shift
 case "$command" in
     setup) preflight; cmd_setup; exit $? ;;
+    prefabs) preflight; cmd_prefabs; exit $? ;;
     tests) preflight; cmd_tests "$@"; exit $? ;;
     *) usage ;;
 esac
