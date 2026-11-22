@@ -1,4 +1,6 @@
+using System.IO;
 using System.Linq;
+using NUnit.Framework;
 using Newtonsoft.Json;
 using WeirdLand.Core.Data;
 
@@ -52,6 +54,19 @@ namespace WeirdLand.Core.Tests
             };
             p.Deck.AddRange(deck);
             return p;
+        }
+
+        /// <summary>Loads the shared game data by walking up from the test directory to data/cards.json.</summary>
+        public static GameData RealData()
+        {
+            var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
+            while (dir != null)
+            {
+                var candidate = Path.Combine(dir.FullName, "data");
+                if (File.Exists(Path.Combine(candidate, "cards.json"))) return DataLoader.Load(candidate);
+                dir = dir.Parent;
+            }
+            throw new FileNotFoundException("data/cards.json not found above " + TestContext.CurrentContext.TestDirectory);
         }
 
         public static string CardsJson(params object[] cards)

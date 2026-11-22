@@ -8,7 +8,7 @@ namespace WeirdLand.Core.Tests
 {
     public class RealDataTests
     {
-        static GameData Load() => DataLoader.Load(Path.Combine(TestContext.CurrentContext.TestDirectory, "../../../../../data"));
+        static GameData Load() => TestKit.RealData();
 
         [Test]
         public void RealData_LoadsAndValidates()
