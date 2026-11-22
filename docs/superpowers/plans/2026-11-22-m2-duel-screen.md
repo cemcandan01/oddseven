@@ -705,7 +705,7 @@ git add .gitignore core/WeirdLand.Core/WeirdLand.Core.csproj tools/unity.sh unit
     - `UniTask<bool> Pass(string targetId, CancellationToken ct)`
     - `UniTask<bool> EndTurn(CancellationToken ct)`
     - `event Action<DuelOutcome> Ended`
-  - `TestDecks` (sadece testler): `CardDef`/`PlayerDef` nesnelerinden küçük `DuelSetup`'lar kurar. Görev 7 ve 8 testleri de bunu kullanır.
+  - `TestDecks` (sadece EditMode testleri): `CardDef`/`PlayerDef` nesnelerinden küçük `DuelSetup`'lar kurar. Görev 7'nin EditMode testleri de bunu kullanır. PlayMode testleri (Görev 8 ve 9) bu assembly'ye erişemez, onlar gerçek veriyle `TestRig` kullanır.
 
 Kurallar:
 - Her komut önce geçerliliğe bakar:
@@ -825,8 +825,10 @@ Yer tutucu görseller koddan çizilir: düz renkli kart çerçevesi ve çöp ada
   Assert.That(xs.Max() + 100, Is.LessThanOrEqualTo(600.001f)); Assert.That(xs.Min() - 100, Is.GreaterThanOrEqualTo(-600.001f));
   Assert.That(xs, Is.Ordered); }
 [Test] public void HandLayout_Zero_Empty() => Assert.That(HandLayout.Positions(0, 200, 1200, 20), Is.Empty);
-[Test] public void PrefabBuilder_CreatesCatalogWithAllPrefabs()
-{ PrefabBuilder.BuildAll(); var cat = VisualCatalog.Load();
+[Test] public void Catalog_HasAllPrefabs()
+{ // BuildAll test içinde çağrılmaz: her test koşusu commit'li prefab'ları yeniden yazıp git'i kirletirdi.
+  // Prefab'lar Step 4'te `tools/unity.sh prefabs` ile üretilir, test commit'li kataloğu doğrular.
+  var cat = VisualCatalog.Load();
   Assert.That(cat.Card, Is.Not.Null); Assert.That(cat.Fighter, Is.Not.Null); Assert.That(cat.StatusChip, Is.Not.Null);
   Assert.That(cat.Button, Is.Not.Null); Assert.That(cat.IntentBubble, Is.Not.Null); }
 [Test] public void CardView_Bind_ShowsPreviewAndDimsWhenUnplayable()
