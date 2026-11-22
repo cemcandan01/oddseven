@@ -1,6 +1,8 @@
 using System.IO;
 using System.Linq;
+using WeirdLand.Core.Ai;
 using WeirdLand.Core.Data;
+using WeirdLand.Core.Match;
 
 namespace WeirdLand.Core.Tests
 {
@@ -28,6 +30,23 @@ namespace WeirdLand.Core.Tests
             Assert.That(gd.Teams.ContainsKey("kirmizi"), Is.True);
             foreach (var tier in new[] { 1, 2, 3 })
                 Assert.That(gd.Teams.Values.Any(t => t.Id != "mavi" && t.Tier == tier), Is.True, "tier " + tier);
+        }
+
+        [Test]
+        public void RealData_SameSeed_RandomPolicy_SameEvents()
+        {
+            var gd = Load();
+            MatchResult Run()
+            {
+                var m = new MatchEngine(gd, gd.Team("mavi"), gd.Team("kirmizi"), 17);
+                return MatchRunner.Play(m, new RandomPolicy(), new Rng(17u ^ 0x5bd1e995u));
+            }
+            var a = Run();
+            var b = Run();
+            Assert.That(a.Duels, Is.GreaterThan(0));
+            Assert.That(a.Events.Count, Is.GreaterThan(100));
+            Assert.That(b.Events, Is.EqualTo(a.Events));
+            Assert.That((b.UserScore, b.OppScore, b.Turns), Is.EqualTo((a.UserScore, a.OppScore, a.Turns)));
         }
 
         [Test]

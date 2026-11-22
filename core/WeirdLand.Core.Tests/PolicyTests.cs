@@ -177,6 +177,22 @@ namespace WeirdLand.Core.Tests
             for (int i = 0; i < a.Events.Count; i++) Assert.That(b.Events[i], Is.EqualTo(a.Events[i]));
         }
 
+        private record BogusAction : DuelAction;
+
+        private class BogusPolicy : IUserPolicy
+        {
+            public DuelAction Decide(Duel duel, MatchEngine match, Rng rng) => new BogusAction();
+        }
+
+        [Test]
+        public void MatchRunner_RejectsUnknownAction()
+        {
+            var card = Card("c", 1, CardRole.Both, Dmg(3));
+            var m = new MatchEngine(Data(card), Team("u", "c"), Team("o", "c"), 7);
+            var ex = Assert.Throws<System.InvalidOperationException>(() => MatchRunner.Play(m, new BogusPolicy(), new Rng(7)));
+            Assert.That(ex!.Message, Does.Contain(nameof(BogusAction)));
+        }
+
         private class AlwaysPlayZero : IUserPolicy
         {
             public DuelAction Decide(Duel duel, MatchEngine match, Rng rng) => new PlayCardAction(0);

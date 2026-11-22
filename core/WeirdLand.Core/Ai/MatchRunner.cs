@@ -39,11 +39,15 @@ namespace WeirdLand.Core.Ai
                 {
                     if (++actions > MaxActions)
                         throw new InvalidOperationException("MatchRunner exceeded MaxActions.");
-                    switch (p.Decide(duel, m, rng))
+                    var action = p.Decide(duel, m, rng);
+                    switch (action)
                     {
                         case PlayCardAction a: Add(duel.PlayCard(a.HandIndex)); break;
                         case PassAction a: Add(duel.Pass(a.TargetId)); break;
-                        default: Add(duel.EndTurn()); break;
+                        case EndTurnAction _: Add(duel.EndTurn()); break;
+                        default:
+                            throw new InvalidOperationException("MatchRunner: unknown action "
+                                + (action == null ? "null" : action.GetType().Name) + ".");
                     }
                 }
                 r.Turns += duel.Turn;

@@ -79,7 +79,8 @@ foreach (var opp in opponents)
     {
         uint s = unchecked(seed + (uint)i);
         var engine = new MatchEngine(data, user, opp, s);
-        results.Add(MatchRunner.Play(engine, policy, new Rng(s)));
+        // Policy stream derived from the match seed, so it is not a copy of the engine's stream.
+        results.Add(MatchRunner.Play(engine, policy, new Rng(s ^ 0x5bd1e995u)));
     }
     if (!first) Console.WriteLine();
     first = false;
