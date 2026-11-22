@@ -56,18 +56,21 @@ namespace WeirdLand.Core.Tests
             return p;
         }
 
-        /// <summary>Loads the shared game data by walking up from the test directory to data/cards.json.</summary>
-        public static GameData RealData()
+        /// <summary>Finds the shared data/ directory by walking up from the test directory to data/cards.json.</summary>
+        public static string RealDataDir()
         {
             var dir = new DirectoryInfo(TestContext.CurrentContext.TestDirectory);
             while (dir != null)
             {
                 var candidate = Path.Combine(dir.FullName, "data");
-                if (File.Exists(Path.Combine(candidate, "cards.json"))) return DataLoader.Load(candidate);
+                if (File.Exists(Path.Combine(candidate, "cards.json"))) return candidate;
                 dir = dir.Parent;
             }
             throw new FileNotFoundException("data/cards.json not found above " + TestContext.CurrentContext.TestDirectory);
         }
+
+        /// <summary>Loads the shared game data.</summary>
+        public static GameData RealData() => DataLoader.Load(RealDataDir());
 
         public static string CardsJson(params object[] cards)
             => JsonConvert.SerializeObject(new { schemaVersion = 1, cards });

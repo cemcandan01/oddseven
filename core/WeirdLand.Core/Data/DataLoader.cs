@@ -32,6 +32,14 @@ namespace WeirdLand.Core.Data
             public List<TeamDef> Teams { get; set; }
         }
 
+        private class UiTextFile
+        {
+            [JsonProperty(Required = Required.Always)]
+            public int SchemaVersion { get; set; }
+            [JsonProperty(Required = Required.Always)]
+            public Dictionary<string, string> Strings { get; set; }
+        }
+
         private static JsonSerializerSettings Settings()
         {
             return new JsonSerializerSettings
@@ -53,6 +61,25 @@ namespace WeirdLand.Core.Data
             catch (IOException e) { throw new DataException("Cannot read data files in '" + dataDir + "': " + e.Message, e); }
             catch (UnauthorizedAccessException e) { throw new DataException("Cannot read data files in '" + dataDir + "': " + e.Message, e); }
             return FromJson(cards, teams);
+        }
+
+        public static UiText LoadUiText(string dataDir)
+        {
+            string json;
+            try { json = File.ReadAllText(Path.Combine(dataDir, "ui_tr.json")); }
+            catch (IOException e) { throw new DataException("Cannot read ui_tr.json in '" + dataDir + "': " + e.Message, e); }
+            catch (UnauthorizedAccessException e) { throw new DataException("Cannot read ui_tr.json in '" + dataDir + "': " + e.Message, e); }
+            return UiTextFromJson(json);
+        }
+
+        public static UiText UiTextFromJson(string json)
+        {
+            var file = Parse<UiTextFile>(json, "ui_tr.json");
+            if (file.SchemaVersion != SchemaVersion)
+                throw new DataException("ui_tr.json: unsupported schemaVersion " + file.SchemaVersion + " (expected " + SchemaVersion + ")");
+            foreach (var kv in file.Strings)
+                if (string.IsNullOrEmpty(kv.Value)) throw new DataException("ui_tr.json: empty text for key '" + kv.Key + "'");
+            return new UiText(file.Strings);
         }
 
         public static GameData FromJson(string cardsJson, string teamsJson)
