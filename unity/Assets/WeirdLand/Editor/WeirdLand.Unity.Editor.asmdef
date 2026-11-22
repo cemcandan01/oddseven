@@ -1,0 +1,21 @@
+{
+    "name": "WeirdLand.Unity.Editor",
+    "rootNamespace": "WeirdLand.Unity.EditorTools",
+    "references": [
+        "WeirdLand.Unity",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

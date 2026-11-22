@@ -1,0 +1,14 @@
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+MemoryCaptures/
+Screenshots/
+*.csproj
+*.sln
+*.slnx
+/Assets/Plugins/WeirdLand/WeirdLand.Core.*
+/Assets/StreamingAssets/data*
