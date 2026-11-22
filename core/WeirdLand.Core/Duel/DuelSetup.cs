@@ -22,8 +22,8 @@ namespace WeirdLand.Core.Duels
     /// <summary>What the enemy will do on its action. Both null means "wait" (no action).</summary>
     public class EnemyIntent
     {
-        public CardInstance Card;
-        public PlayerDef PassTarget;
-        public double PassChance;
+        public CardInstance Card { get; internal set; }
+        public PlayerDef PassTarget { get; internal set; }
+        public double PassChance { get; internal set; }
     }
 }

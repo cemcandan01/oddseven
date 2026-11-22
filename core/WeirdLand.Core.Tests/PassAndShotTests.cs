@@ -19,7 +19,7 @@ namespace WeirdLand.Core.Tests
         private static Combatant Comb(int passing, int hp, int maxHp, bool unbalanced = false)
         {
             var c = new Combatant { Player = Player("x", Slot.CM, new Stats { Passing = passing }), Hp = hp, MaxHp = maxHp };
-            if (unbalanced) c.Statuses[StatusId.Unbalanced] = 1;
+            if (unbalanced) c.StatusMap[StatusId.Unbalanced] = 1;
             return c;
         }
 

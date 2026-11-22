@@ -147,7 +147,7 @@ namespace WeirdLand.Core.Tests
             var d = Shot(Many(4, "far", 1, AtCorner(Dmg(10), Corner.Far)), new List<CardInstance> { LeanNear() });
             d.Begin();
             // Next intent: a big block (score 16 beats the lean's 4.4), drawn before the reshuffled lean.
-            d.Enemy.DrawPile.Add(Inst("wall", 1, CardRole.Defense, Blk(20)));
+            d.Enemy.DrawList.Add(Inst("wall", 1, CardRole.Defense, Blk(20)));
             d.EndTurn();
             Assert.That(d.Intent.Card.Def.Id, Is.EqualTo("wall"));
             Assert.That(d.Enemy.StatusOf(StatusId.CoverNear), Is.EqualTo(0));

@@ -64,8 +64,8 @@ namespace WeirdLand.Core.Duels
             User.Hp = User.MaxHp;
             Enemy.Hp = Enemy.MaxHp;
 
-            if (_setup.UserMomentum > 0) User.Statuses[StatusId.Momentum] = _setup.UserMomentum;
-            if (_setup.EnemyMomentum > 0) Enemy.Statuses[StatusId.Momentum] = _setup.EnemyMomentum;
+            if (_setup.UserMomentum > 0) User.StatusMap[StatusId.Momentum] = _setup.UserMomentum;
+            if (_setup.EnemyMomentum > 0) Enemy.StatusMap[StatusId.Momentum] = _setup.EnemyMomentum;
 
             Turn = 1;
             StartUserTurn();
@@ -79,8 +79,8 @@ namespace WeirdLand.Core.Duels
             var card = User.Hand[handIndex];
             if (card.Cost > User.Energy) throw new InvalidOperationException("Not enough energy.");
             _ev = new List<GameEvent>();
-            User.Hand.RemoveAt(handIndex);
-            User.Discard.Add(card);
+            User.HandList.RemoveAt(handIndex);
+            User.DiscardList.Add(card);
             User.Energy -= card.Cost;
             _ev.Add(new EnergyChanged(true, User.Energy));
             _ev.Add(new CardPlayed(true, card.Def.Id));
@@ -118,8 +118,8 @@ namespace WeirdLand.Core.Duels
         {
             Guard();
             _ev = new List<GameEvent>();
-            User.Discard.AddRange(User.Hand);
-            User.Hand.Clear();
+            User.DiscardList.AddRange(User.Hand);
+            User.HandList.Clear();
             ResetBlock(Enemy);
 
             if (Intent != null && Intent.PassTarget != null)
@@ -146,9 +146,9 @@ namespace WeirdLand.Core.Duels
                     _ev.AddRange(EffectResolver.Apply(e, Enemy, User, Kind, DrawEvent));
                     if (CheckOutcome()) break;
                 }
-                Enemy.Discard.Add(card);
-                Enemy.Discard.AddRange(Enemy.Hand);
-                Enemy.Hand.Clear();
+                Enemy.DiscardList.Add(card);
+                Enemy.DiscardList.AddRange(Enemy.Hand);
+                Enemy.HandList.Clear();
             }
             Intent = null;
             if (Outcome.HasValue) return _ev;
@@ -174,12 +174,12 @@ namespace WeirdLand.Core.Duels
                 if (c.DrawPile.Count == 0)
                 {
                     if (c.Discard.Count == 0) break;
-                    c.DrawPile.AddRange(c.Discard);
-                    c.Discard.Clear();
-                    rng.Shuffle(c.DrawPile);
+                    c.DrawList.AddRange(c.Discard);
+                    c.DiscardList.Clear();
+                    rng.Shuffle(c.DrawList);
                 }
-                c.Hand.Add(c.DrawPile[0]);
-                c.DrawPile.RemoveAt(0);
+                c.HandList.Add(c.DrawPile[0]);
+                c.DrawList.RemoveAt(0);
                 drawn++;
             }
             return drawn;
@@ -194,8 +194,8 @@ namespace WeirdLand.Core.Duels
         private void Fill(Combatant c, List<CardInstance> deck, bool attacking)
         {
             foreach (var card in deck)
-                if (card.Def.UsableWhen(attacking)) c.DrawPile.Add(card);
-            _rng.Shuffle(c.DrawPile);
+                if (card.Def.UsableWhen(attacking)) c.DrawList.Add(card);
+            _rng.Shuffle(c.DrawList);
         }
 
         private void StartUserTurn()
@@ -241,7 +241,7 @@ namespace WeirdLand.Core.Duels
                 var s = Ticking[i];
                 int n = c.StatusOf(s);
                 if (before[i] <= 0 || n <= 0) continue;
-                if (n == 1) c.Statuses.Remove(s); else c.Statuses[s] = n - 1;
+                if (n == 1) c.StatusMap.Remove(s); else c.StatusMap[s] = n - 1;
                 _ev.Add(new StatusChanged(c.IsUser, s, n - 1));
             }
         }

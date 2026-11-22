@@ -104,8 +104,7 @@ namespace WeirdLand.Core.Ai
         {
             int total = 0;
             foreach (var e in c.Effects)
-                if (e.Type == EffectType.Block)
-                    total += e.Amount + (e.ScaleStat.HasValue ? (int)Math.Floor(e.Scale * user.Player.Stats.Get(e.ScaleStat.Value)) : 0);
+                total += EffectResolver.ComputeBlock(e, user);
             return total;
         }
 

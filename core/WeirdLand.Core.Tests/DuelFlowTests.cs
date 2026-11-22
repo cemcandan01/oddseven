@@ -102,7 +102,7 @@ namespace WeirdLand.Core.Tests
             var deck = new List<CardInstance> { Inst("cheap", 1, CardRole.Both, Blk(1)), Inst("big", 3, CardRole.Both, Blk(1)) };
             var d = Make(DuelKind.Field, true, deck, new List<CardInstance>());
             d.Begin();
-            int cheap = d.User.Hand.FindIndex(c => c.Def.Id == "cheap");
+            int cheap = d.User.HandList.FindIndex(c => c.Def.Id == "cheap");
             var ev = d.PlayCard(cheap);
             Assert.That(d.User.Energy, Is.EqualTo(2));
             Assert.That(ev, Does.Contain(new EnergyChanged(true, 2)));
@@ -248,7 +248,7 @@ namespace WeirdLand.Core.Tests
             var deck = new List<CardInstance> { Inst("kill", 1, CardRole.Both, Dmg(40)), Inst("x", 0, CardRole.Both, Blk(1)) };
             var d = Make(DuelKind.Field, true, deck, new List<CardInstance>());
             d.Begin();
-            d.PlayCard(d.User.Hand.FindIndex(c => c.Def.Id == "kill"));
+            d.PlayCard(d.User.HandList.FindIndex(c => c.Def.Id == "kill"));
             int hand = d.User.Hand.Count;
             Assert.Throws<InvalidOperationException>(() => d.PlayCard(0));
             Assert.Throws<InvalidOperationException>(() => d.EndTurn());

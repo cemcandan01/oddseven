@@ -24,23 +24,32 @@ namespace WeirdLand.Core.Tests
         private List<GameEvent> Apply(EffectDef e)
             => EffectResolver.Apply(e, src, tgt, DuelKind.Field, (c, n) => { }).ToList();
 
+        [Test] public void ComputeBlock_Flat() => Assert.That(EffectResolver.ComputeBlock(Blk(4), src), Is.EqualTo(4));
+        [Test] public void ComputeBlock_ScalesWithStat()
+        {
+            src.Player.Stats.Power = 2;
+            var e = new EffectDef { Type = EffectType.Block, Target = EffectTarget.Self, Amount = 3, ScaleStat = Stat.Power, Scale = 1 };
+            Assert.That(EffectResolver.ComputeBlock(e, src), Is.EqualTo(5));
+        }
+        [Test] public void ComputeBlock_NonBlockEffect_IsZero() => Assert.That(EffectResolver.ComputeBlock(Dmg(5), src), Is.EqualTo(0));
+
         [Test] public void Damage_AddsScaledStat() => Assert.That(Compute(Dmg(4, Stat.Dribbling, 1)), Is.EqualTo(8));
-        [Test] public void Momentum_AddsFlat() { src.Statuses[StatusId.Momentum] = 2; Assert.That(Compute(Dmg(4)), Is.EqualTo(6)); }
-        [Test] public void Tired_Reduces() { src.Statuses[StatusId.Tired] = 1; Assert.That(Compute(Dmg(8)), Is.EqualTo(6)); }
-        [Test] public void Unbalanced_Increases() { tgt.Statuses[StatusId.Unbalanced] = 1; Assert.That(Compute(Dmg(5)), Is.EqualTo(7)); }
+        [Test] public void Momentum_AddsFlat() { src.StatusMap[StatusId.Momentum] = 2; Assert.That(Compute(Dmg(4)), Is.EqualTo(6)); }
+        [Test] public void Tired_Reduces() { src.StatusMap[StatusId.Tired] = 1; Assert.That(Compute(Dmg(8)), Is.EqualTo(6)); }
+        [Test] public void Unbalanced_Increases() { tgt.StatusMap[StatusId.Unbalanced] = 1; Assert.That(Compute(Dmg(5)), Is.EqualTo(7)); }
         [Test]
         public void BonusIfTargetHas_Multiplies()
         {
-            tgt.Statuses[StatusId.Unbalanced] = 1;
+            tgt.StatusMap[StatusId.Unbalanced] = 1;
             var e = Dmg(4); e.BonusIfTargetHas = StatusId.Unbalanced; e.BonusMultiplier = 2;
             Assert.That(Compute(e), Is.EqualTo(12));
         }
         [Test] public void Block_AbsorbsFirst() { tgt.Block = 3; Apply(Dmg(5)); Assert.That(tgt.Hp, Is.EqualTo(18)); Assert.That(tgt.Block, Is.EqualTo(0)); }
         [Test] public void Shot_NonCorner_Halved() => Assert.That(ComputeShot(Dmg(8)), Is.EqualTo(4));
         [Test] public void Shot_NearCorner_ReducedByGkNear() { gk.Player.Stats.Near = 3; Assert.That(ComputeShot(AtCorner(Dmg(8), Corner.Near)), Is.EqualTo(5)); }
-        [Test] public void Shot_UncoveredCorner_Doubled() { gk.Player.Stats.Far = 2; gk.Statuses[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(8), Corner.Far)), Is.EqualTo(12)); }
-        [Test] public void Shot_CoveredCorner_NotDoubled() { gk.Player.Stats.Near = 2; gk.Statuses[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(8), Corner.Near)), Is.EqualTo(6)); }
-        [Test] public void Shot_Top_NoReductionNoDouble() { gk.Statuses[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(6), Corner.Top)), Is.EqualTo(6)); }
+        [Test] public void Shot_UncoveredCorner_Doubled() { gk.Player.Stats.Far = 2; gk.StatusMap[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(8), Corner.Far)), Is.EqualTo(12)); }
+        [Test] public void Shot_CoveredCorner_NotDoubled() { gk.Player.Stats.Near = 2; gk.StatusMap[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(8), Corner.Near)), Is.EqualTo(6)); }
+        [Test] public void Shot_Top_NoReductionNoDouble() { gk.StatusMap[StatusId.CoverNear] = 1; Assert.That(ComputeShot(AtCorner(Dmg(6), Corner.Top)), Is.EqualTo(6)); }
         [Test] public void CornerCard_VsFieldPlayer_Halved() => Assert.That(Compute(AtCorner(Dmg(9), Corner.Near)), Is.EqualTo(4));
         [Test] public void CornerCard_TopVsFieldPlayer_Halved() => Assert.That(Compute(AtCorner(Dmg(8), Corner.Top)), Is.EqualTo(4));
         [Test]

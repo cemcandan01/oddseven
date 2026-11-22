@@ -9,6 +9,9 @@ namespace WeirdLand.Core.Duels
         private static int ScaledBonus(EffectDef e, Combatant src)
             => e.ScaleStat.HasValue ? (int)Math.Floor(e.Scale * src.Player.Stats.Get(e.ScaleStat.Value)) : 0;
 
+        public static int ComputeBlock(EffectDef e, Combatant src)
+            => e.Type == EffectType.Block ? e.Amount + ScaledBonus(e, src) : 0;
+
         public static int ComputeDamage(EffectDef e, Combatant src, Combatant tgt, DuelKind kind)
         {
             double d = e.Amount + ScaledBonus(e, src);
@@ -64,7 +67,7 @@ namespace WeirdLand.Core.Duels
                 }
                 case EffectType.Block:
                 {
-                    int amt = e.Amount + ScaledBonus(e, src);
+                    int amt = ComputeBlock(e, src);
                     src.Block += amt;
                     events.Add(new BlockGained(src.IsUser, amt));
                     break;
@@ -73,8 +76,8 @@ namespace WeirdLand.Core.Duels
                 {
                     var holder = e.Target == EffectTarget.Self ? src : tgt;
                     var id = e.Status.Value;
-                    holder.Statuses[id] = holder.StatusOf(id) + e.Stacks;
-                    events.Add(new StatusApplied(holder.IsUser, id, holder.Statuses[id]));
+                    holder.StatusMap[id] = holder.StatusOf(id) + e.Stacks;
+                    events.Add(new StatusApplied(holder.IsUser, id, holder.StatusMap[id]));
                     break;
                 }
                 case EffectType.Draw:

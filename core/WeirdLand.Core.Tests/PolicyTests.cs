@@ -101,7 +101,7 @@ namespace WeirdLand.Core.Tests
         public void GoodPolicy_PassesWhenChanceHigh()
         {
             var d = NewDuel(true, DuelKind.Field, 5, Card("small", 1, CardRole.Both, Dmg(1)));
-            d.Enemy.Statuses[StatusId.Unbalanced] = 2;
+            d.Enemy.StatusMap[StatusId.Unbalanced] = 2;
             Assert.That(d.PassChance(), Is.GreaterThanOrEqualTo(0.75));
             var a = new GoodPolicy().Decide(d, null, new Rng(1));
             Assert.That(a, Is.TypeOf<PassAction>());

@@ -12,7 +12,7 @@ namespace WeirdLand.Core.Duels
             var user = d.User;
             Duel.DrawCards(enemy, 2, rng);
             var drawn = new List<CardInstance>(enemy.Hand);
-            enemy.Hand.Clear();
+            enemy.HandList.Clear();
 
             if (d.Kind == DuelKind.Field && !d.UserIsAttacker && d.EnemyPassTargets.Count > 0)
             {
@@ -26,7 +26,7 @@ namespace WeirdLand.Core.Duels
                         int sum = t.Stats.Dribbling + t.Stats.Shooting;
                         if (sum > bestSum) { bestSum = sum; target = t; }
                     }
-                    enemy.Discard.AddRange(drawn);
+                    enemy.DiscardList.AddRange(drawn);
                     return new EnemyIntent { PassTarget = target, PassChance = chance };
                 }
             }
@@ -40,7 +40,7 @@ namespace WeirdLand.Core.Duels
                 double s = Score(c, enemy, user, d.Kind);
                 if (s > bestScore) { bestScore = s; best = c; }
             }
-            foreach (var c in drawn) if (!ReferenceEquals(c, best)) enemy.Discard.Add(c);
+            foreach (var c in drawn) if (!ReferenceEquals(c, best)) enemy.DiscardList.Add(c);
             return new EnemyIntent { Card = best };
         }
 
@@ -59,8 +59,7 @@ namespace WeirdLand.Core.Duels
             {
                 if (e.Type == EffectType.Block)
                 {
-                    int amt = e.Amount + (e.ScaleStat.HasValue ? (int)Math.Floor(e.Scale * src.Player.Stats.Get(e.ScaleStat.Value)) : 0);
-                    score += 0.8 * amt;
+                    score += 0.8 * EffectResolver.ComputeBlock(e, src);
                 }
                 else if (e.Type == EffectType.Status && e.Status.HasValue)
                 {

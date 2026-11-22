@@ -307,7 +307,7 @@ namespace WeirdLand.Core.Tests
         {
             var e = Engine();
             e.StartNextDuel();
-            e.CurrentDuel.User.Statuses[StatusId.Momentum] = 2;
+            e.CurrentDuel.User.StatusMap[StatusId.Momentum] = 2;
             e.CurrentDuel.ForceOutcome(DuelOutcome.AttackerWon);
             e.CompleteDuel();
             e.StartNextDuel();
