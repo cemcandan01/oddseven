@@ -44,7 +44,9 @@ cmd_setup() {
 }
 
 cmd_prefabs() {
-    "$UNITY_EXE" -batchmode -projectPath "$(winpath "$PROJECT")"         -executeMethod WeirdLand.Unity.EditorTools.PrefabBuilder.BuildAll -quit         -logFile "$(winpath "$LOGS/prefabs.log")"
+    "$UNITY_EXE" -batchmode -projectPath "$(winpath "$PROJECT")" \
+        -executeMethod WeirdLand.Unity.EditorTools.PrefabBuilder.BuildAll -quit \
+        -logFile "$(winpath "$LOGS/prefabs.log")"
     local code=$?
     if [ $code -ne 0 ]; then
         echo "prefabs failed (exit $code). Last 40 log lines:"
