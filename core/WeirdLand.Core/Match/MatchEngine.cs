@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using WeirdLand.Core.Data;
 using WeirdLand.Core.Duels;
@@ -52,7 +53,7 @@ namespace WeirdLand.Core.Match
             foreach (var p in def.Players)
             {
                 var ps = new PlayerState { Def = p };
-                foreach (var id in p.Deck) ps.Deck.Add(new CardInstance(_data.Card(id), false));
+                ps.Deck.AddRange(DuelSetupHelpers.BuildDeck(_data, p));
                 t.Players.Add(ps);
             }
             return t;
@@ -132,8 +133,7 @@ namespace WeirdLand.Core.Match
             if (_userAttacks) setup.UserMomentum += _carriedMomentum; else setup.EnemyMomentum += _carriedMomentum;
             if (def.Tactic == Tactic.Defensive) setup.DefenderMaxHpBonus = MatchRules.DefensiveHpBonus;
             var targets = _userAttacks ? setup.UserPassTargets : setup.EnemyPassTargets;
-            foreach (var p in atk.Players)
-                if (p != _carrier && p.Def.Slot != Slot.GK) targets.Add(p.Def);
+            DuelSetupHelpers.AddPassTargets(targets, atk.Players.Select(p => p.Def), _carrier.Def);
 
             CurrentDuel = new Duel(setup, _rng.Fork());
             Phase = MatchPhase.InDuel;

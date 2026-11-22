@@ -65,16 +65,15 @@ namespace WeirdLand.Core.Duels
                 UserPlayer = userP,
                 EnemyPlayer = enemyP,
             };
-            foreach (var id in userP.Deck) setup.UserDeck.Add(new CardInstance(data.Card(id), false));
-            foreach (var id in enemyP.Deck) setup.EnemyDeck.Add(new CardInstance(data.Card(id), false));
+            setup.UserDeck = DuelSetupHelpers.BuildDeck(data, userP);
+            setup.EnemyDeck = DuelSetupHelpers.BuildDeck(data, enemyP);
 
             if (!shot)
             {
                 var atkTeam = userAttacks ? userTeam : oppTeam;
                 var carrier = userAttacks ? userP : enemyP;
                 var targets = userAttacks ? setup.UserPassTargets : setup.EnemyPassTargets;
-                foreach (var p in atkTeam.Players)
-                    if (p != carrier && p.Slot != Slot.GK) targets.Add(p);
+                DuelSetupHelpers.AddPassTargets(targets, atkTeam.Players, carrier);
             }
             return setup;
         }
