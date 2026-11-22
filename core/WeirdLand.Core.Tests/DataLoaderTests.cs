@@ -151,6 +151,141 @@ namespace WeirdLand.Core.Tests
             Assert.That(ex!.Message, Does.Contain("calim"));
         }
 
+        // ---- Strict loading: required members, no null lists, semantic checks ----
+
+        private static Dictionary<string, object?> CardMap(string id, params object[] effects) => new()
+        {
+            ["id"] = id,
+            ["name"] = "Bozuk",
+            ["text"] = "x",
+            ["cost"] = 1,
+            ["role"] = "Attack",
+            ["positions"] = AllPos,
+            ["rarity"] = "Common",
+            ["effects"] = effects.Length == 0 ? new[] { Fx() } : effects,
+        };
+
+        private static Dictionary<string, object?> StatsMap() => new()
+        {
+            ["speed"] = 3, ["power"] = 3, ["passing"] = 3, ["dribbling"] = 3, ["shooting"] = 3,
+            ["defending"] = 3, ["aerial"] = 3, ["near"] = 3, ["far"] = 3,
+        };
+
+        private static Dictionary<string, object?> PlayerMap(string id, string slot) => new()
+        {
+            ["id"] = id,
+            ["name"] = id,
+            ["slot"] = slot,
+            ["stats"] = StatsMap(),
+            ["deck"] = Deck(6),
+        };
+
+        private static object[] SquadMaps(Action<Dictionary<string, object?>[]> tweak)
+        {
+            var list = new Dictionary<string, object?>[Slots.Length];
+            for (int i = 0; i < Slots.Length; i++) list[i] = PlayerMap("p" + i, Slots[i]);
+            tweak(list);
+            return list;
+        }
+
+        private static DataException BadCard(Dictionary<string, object?> card)
+            => Assert.Throws<DataException>(() => DataLoader.FromJson(TestKit.CardsJson(CardObj("calim"), card), ValidTeams))!;
+
+        private static DataException BadTeams(object team)
+            => Assert.Throws<DataException>(() => DataLoader.FromJson(ValidCards, TestKit.TeamsJson(team)))!;
+
+        [Test]
+        public void NullPlayers_Throws()
+        {
+            var ex = BadTeams(TeamObj(null!));
+            Assert.That(ex.Message, Does.Contain("players"));
+        }
+
+        [Test]
+        public void NullDeck_Throws()
+        {
+            var ex = BadTeams(TeamObj(SquadMaps(p => p[2]["deck"] = null)));
+            Assert.That(ex.Message, Does.Contain("deck"));
+        }
+
+        [Test]
+        public void NullPositions_Throws()
+        {
+            var card = CardMap("bozuk");
+            card["positions"] = null;
+            Assert.That(BadCard(card).Message, Does.Contain("positions"));
+        }
+
+        [Test]
+        public void MissingRole_Throws()
+        {
+            var card = CardMap("bozuk");
+            card.Remove("role");
+            Assert.That(BadCard(card).Message, Does.Contain("role"));
+        }
+
+        [Test]
+        public void MissingEffectType_Throws()
+        {
+            var card = CardMap("bozuk", new { amount = 3 });
+            Assert.That(BadCard(card).Message, Does.Contain("type").And.Contain("effects"));
+        }
+
+        [Test]
+        public void MissingStats_Throws()
+        {
+            var ex = BadTeams(TeamObj(SquadMaps(p => p[3].Remove("stats"))));
+            Assert.That(ex.Message, Does.Contain("stats"));
+        }
+
+        [Test]
+        public void MissingSchemaVersion_Throws()
+        {
+            var cards = JsonConvert.SerializeObject(new { cards = new[] { CardObj("calim") } });
+            var ex = Assert.Throws<DataException>(() => DataLoader.FromJson(cards, ValidTeams));
+            Assert.That(ex!.Message, Does.Contain("schemaVersion"));
+        }
+
+        [TestCase(false, 1)]
+        [TestCase(true, 0)]
+        public void StatusEffect_NeedsStatusAndPositiveStacks(bool withStatus, int stacks)
+        {
+            object fx = withStatus
+                ? new { type = "Status", status = "Tired", stacks }
+                : (object)new { type = "Status", stacks };
+            var ex = BadCard(CardMap("bozuk", fx));
+            Assert.That(ex.Message, Does.Contain("bozuk").And.Contain("status").IgnoreCase);
+        }
+
+        [Test]
+        public void ScaleWithoutScaleStat_Throws()
+        {
+            var ex = BadCard(CardMap("bozuk", new { type = "Damage", amount = 4, scale = 1 }));
+            Assert.That(ex.Message, Does.Contain("bozuk").And.Contain("scaleStat"));
+        }
+
+        [Test]
+        public void NegativeCost_Throws()
+        {
+            var card = CardMap("bozuk");
+            card["cost"] = -1;
+            Assert.That(BadCard(card).Message, Does.Contain("bozuk").And.Contain("cost"));
+        }
+
+        [Test]
+        public void NegativeStat_Throws()
+        {
+            var ex = BadTeams(TeamObj(SquadMaps(p => ((Dictionary<string, object?>)p[4]["stats"]!)["power"] = -1), "takim5"));
+            Assert.That(ex.Message, Does.Contain("takim5").And.Contain("p4").And.Contain("Power"));
+        }
+
+        [Test]
+        public void DuplicatePlayerId_Throws()
+        {
+            var ex = BadTeams(TeamObj(SquadMaps(p => p[5]["id"] = "p1"), "takim6"));
+            Assert.That(ex.Message, Does.Contain("takim6").And.Contain("p1"));
+        }
+
         [Test]
         public void UsableWhen_FollowsRole()
         {

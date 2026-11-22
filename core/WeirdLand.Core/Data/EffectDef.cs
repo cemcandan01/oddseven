@@ -1,7 +1,10 @@
+using Newtonsoft.Json;
+
 namespace WeirdLand.Core.Data
 {
     public class EffectDef
     {
+        [JsonProperty(Required = Required.Always)]
         public EffectType Type { get; set; }
         public EffectTarget Target { get; set; } = EffectTarget.Opponent;
         public int Amount { get; set; }

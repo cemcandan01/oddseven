@@ -13,16 +13,22 @@ namespace WeirdLand.Core.Data
         private const int MinDeck = 6;
         private const int MaxDeck = 10;
         private const int SquadSize = 7;
+        private static readonly Stat[] StatOrder =
+            { Stat.Speed, Stat.Power, Stat.Passing, Stat.Dribbling, Stat.Shooting, Stat.Defending, Stat.Aerial, Stat.Near, Stat.Far };
 
         private class CardsFile
         {
+            [JsonProperty(Required = Required.Always)]
             public int SchemaVersion { get; set; }
+            [JsonProperty(Required = Required.Always)]
             public List<CardDef> Cards { get; set; }
         }
 
         private class TeamsFile
         {
+            [JsonProperty(Required = Required.Always)]
             public int SchemaVersion { get; set; }
+            [JsonProperty(Required = Required.Always)]
             public List<TeamDef> Teams { get; set; }
         }
 
@@ -60,15 +66,16 @@ namespace WeirdLand.Core.Data
                 throw new DataException("teams.json: unsupported schemaVersion " + teamsFile.SchemaVersion + " (expected " + SchemaVersion + ")");
 
             var cards = new Dictionary<string, CardDef>();
-            foreach (var c in cardsFile.Cards ?? new List<CardDef>())
+            foreach (var c in cardsFile.Cards)
             {
                 if (c == null || string.IsNullOrEmpty(c.Id)) throw new DataException("cards.json: card without id");
                 if (cards.ContainsKey(c.Id)) throw new DataException("cards.json: duplicate card id '" + c.Id + "'");
+                ValidateCard(c);
                 cards[c.Id] = c;
             }
 
             var teams = new Dictionary<string, TeamDef>();
-            foreach (var t in teamsFile.Teams ?? new List<TeamDef>())
+            foreach (var t in teamsFile.Teams)
             {
                 if (t == null || string.IsNullOrEmpty(t.Id)) throw new DataException("teams.json: team without id");
                 if (teams.ContainsKey(t.Id)) throw new DataException("teams.json: duplicate team id '" + t.Id + "'");
@@ -79,14 +86,47 @@ namespace WeirdLand.Core.Data
             return new GameData(cards, teams);
         }
 
+        private static void ValidateCard(CardDef c)
+        {
+            string who = "cards.json: card '" + c.Id + "'";
+            if (c.Cost < 0) throw new DataException(who + ": negative cost " + c.Cost);
+            if (c.UpgradedCost.HasValue && c.UpgradedCost.Value < 0)
+                throw new DataException(who + ": negative upgradedCost " + c.UpgradedCost.Value);
+            ValidateEffects(c.Effects, who + ", effects");
+            if (c.UpgradedEffects != null) ValidateEffects(c.UpgradedEffects, who + ", upgradedEffects");
+        }
+
+        private static void ValidateEffects(List<EffectDef> effects, string who)
+        {
+            for (int i = 0; i < effects.Count; i++)
+            {
+                var e = effects[i];
+                string at = who + "[" + i + "]";
+                if (e == null) throw new DataException(at + ": null effect");
+                if (e.Type == EffectType.Status)
+                {
+                    if (!e.Status.HasValue) throw new DataException(at + ": Status effect without status");
+                    if (e.Stacks <= 0) throw new DataException(at + ": Status effect needs stacks > 0, has " + e.Stacks);
+                }
+                if (e.Scale != 0 && !e.ScaleStat.HasValue)
+                    throw new DataException(at + ": scale " + e.Scale + " without scaleStat");
+            }
+        }
+
         private static void ValidateTeam(TeamDef team, Dictionary<string, CardDef> cards)
         {
             var seen = new HashSet<Slot>();
+            var ids = new HashSet<string>();
             foreach (var p in team.Players)
             {
                 if (p == null) throw new DataException("team '" + team.Id + "': null player");
                 if (!seen.Add(p.Slot))
                     throw new DataException("team '" + team.Id + "': duplicate slot " + p.Slot + " (player '" + p.Id + "')");
+                if (!ids.Add(p.Id))
+                    throw new DataException("team '" + team.Id + "': duplicate player id '" + p.Id + "'");
+                foreach (Stat st in StatOrder)
+                    if (p.Stats.Get(st) < 0)
+                        throw new DataException("team '" + team.Id + "', player '" + p.Id + "': negative stat " + st + " " + p.Stats.Get(st));
             }
             if (team.Players.Count != SquadSize)
                 throw new DataException("team '" + team.Id + "': needs " + SquadSize + " players with unique slots, has " + team.Players.Count);
