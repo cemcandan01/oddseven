@@ -202,13 +202,30 @@ namespace WeirdLand.Core.Tests
         [Test]
         public void StatusesTickDown_MomentumStays()
         {
-            var enemy = new List<CardInstance> { Inst("trip", 0, CardRole.Both, Sts(StatusId.Unbalanced, 2)) };
-            var d = Make(DuelKind.Field, true, Many(6, CardRole.Both), enemy, s => { s.UserMomentum = 2; s.EnemyMomentum = 1; });
+            // User-applied: exists before the enemy acts, so it ticks at the end of this round.
+            var user = Many(6, CardRole.Both, "trip", 0, Sts(StatusId.Unbalanced, 2));
+            var d = Make(DuelKind.Field, true, user, new List<CardInstance>(), s => { s.UserMomentum = 2; s.EnemyMomentum = 1; });
             d.Begin();
+            d.PlayCard(0);
             d.EndTurn();
-            Assert.That(d.User.StatusOf(StatusId.Unbalanced), Is.EqualTo(1));
+            Assert.That(d.Enemy.StatusOf(StatusId.Unbalanced), Is.EqualTo(1));
             Assert.That(d.User.StatusOf(StatusId.Momentum), Is.EqualTo(2));
             Assert.That(d.Enemy.StatusOf(StatusId.Momentum), Is.EqualTo(1));
+            d.EndTurn();
+            Assert.That(d.Enemy.StatusOf(StatusId.Unbalanced), Is.EqualTo(0));
+            Assert.That(d.User.StatusOf(StatusId.Momentum), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void EnemyAppliedStatus_SkipsTickOfTheRoundItWasApplied()
+        {
+            var enemy = new List<CardInstance> { Inst("trip", 0, CardRole.Both, Sts(StatusId.Unbalanced, 2)) };
+            var d = Make(DuelKind.Field, true, Many(6, CardRole.Both), enemy);
+            d.Begin();
+            d.EndTurn();
+            Assert.That(d.User.StatusOf(StatusId.Unbalanced), Is.EqualTo(2));
+            d.EndTurn(); // 2 old stacks tick by one, 2 new stacks are just applied: 2 - 1 + 2
+            Assert.That(d.User.StatusOf(StatusId.Unbalanced), Is.EqualTo(3));
         }
 
         [Test]

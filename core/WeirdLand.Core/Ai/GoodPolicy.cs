@@ -56,14 +56,18 @@ namespace WeirdLand.Core.Ai
             foreach (var i in playable)
                 if (AppliesStatus(user.Hand[i], EffectTarget.Self, StatusId.Momentum)) return new PlayCardAction(i);
 
-            int bestIdx = -1;
-            double bestRatio = 0;
-            foreach (var i in playable)
+            // As shooter, read the keeper's lean: shoot at the corner he is not covering.
+            if (duel.UserIsAttacker && (duel.Kind == DuelKind.Shot || duel.Kind == DuelKind.Penalty))
             {
-                var c = user.Hand[i];
-                double ratio = TotalDamage(c, duel) / (double)Math.Max(1, c.Cost);
-                if (ratio > bestRatio) { bestRatio = ratio; bestIdx = i; }
+                var open = UncoveredCorner(enemy);
+                if (open != Corner.None)
+                {
+                    int aimed = BestDamagePerEnergy(duel, playable, c => AimsAt(c, open));
+                    if (aimed >= 0) return new PlayCardAction(aimed);
+                }
             }
+
+            int bestIdx = BestDamagePerEnergy(duel, playable, c => true);
             if (bestIdx >= 0) return new PlayCardAction(bestIdx);
 
             // 5. last-turn gamble
@@ -112,6 +116,36 @@ namespace WeirdLand.Core.Ai
                 if (e.Type != EffectType.Status || !e.Status.HasValue || e.Target != target) continue;
                 foreach (var id in ids) if (e.Status.Value == id) return true;
             }
+            return false;
+        }
+
+        private static int BestDamagePerEnergy(Duel duel, List<int> playable, Func<CardInstance, bool> allowed)
+        {
+            int bestIdx = -1;
+            double bestRatio = 0;
+            foreach (var i in playable)
+            {
+                var c = duel.User.Hand[i];
+                if (!allowed(c)) continue;
+                double ratio = TotalDamage(c, duel) / (double)Math.Max(1, c.Cost);
+                if (ratio > bestRatio) { bestRatio = ratio; bestIdx = i; }
+            }
+            return bestIdx;
+        }
+
+        /// <summary>The corner a keeper leaning to exactly one side leaves open; None otherwise.</summary>
+        private static Corner UncoveredCorner(Combatant keeper)
+        {
+            bool near = keeper.StatusOf(StatusId.CoverNear) > 0;
+            bool far = keeper.StatusOf(StatusId.CoverFar) > 0;
+            if (near == far) return Corner.None;
+            return near ? Corner.Far : Corner.Near;
+        }
+
+        private static bool AimsAt(CardInstance c, Corner corner)
+        {
+            foreach (var e in c.Effects)
+                if (e.Type == EffectType.Damage && e.Corner == corner) return true;
             return false;
         }
 

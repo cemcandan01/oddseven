@@ -107,6 +107,45 @@ namespace WeirdLand.Core.Tests
             Assert.That(a, Is.TypeOf<PassAction>());
         }
 
+        private static Duel ShotVsLeaningKeeper(StatusId lean, params CardDef[] userCards)
+        {
+            var setup = new DuelSetup
+            {
+                Kind = DuelKind.Shot,
+                UserIsAttacker = true,
+                UserPlayer = Player("u", Slot.ST, S()),
+                EnemyPlayer = Player("gk", Slot.GK, S()), // Near 3, Far 3: Kale 18
+            };
+            foreach (var c in userCards) setup.UserDeck.Add(new CardInstance(c, false));
+            setup.EnemyDeck.Add(new CardInstance(Card("lean", 1, CardRole.Defense, Sts(lean, 1, EffectTarget.Self), Blk(3)), false));
+            var d = new Duel(setup, new Rng(5));
+            d.Begin();
+            return d;
+        }
+
+        [TestCase(StatusId.CoverNear, "far")]
+        [TestCase(StatusId.CoverFar, "near")]
+        public void GoodPolicy_Shooter_PicksUncoveredCorner(StatusId lean, string expected)
+        {
+            var d = ShotVsLeaningKeeper(lean,
+                Card("near", 1, CardRole.Attack, AtCorner(Dmg(6), Corner.Near)),
+                Card("far", 1, CardRole.Attack, AtCorner(Dmg(6), Corner.Far)));
+            var a = new GoodPolicy().Decide(d, null, new Rng(1));
+            Assert.That(a, Is.TypeOf<PlayCardAction>());
+            Assert.That(d.User.Hand[((PlayCardAction)a).HandIndex].Def.Id, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void GoodPolicy_Shooter_AvoidsCoveredCorner_EvenWithMoreRawDamage()
+        {
+            // Covered near: 10 - 3 = 7. Uncovered far: (6 - 3) * 2 = 6. Neither is lethal (Kale 18).
+            var d = ShotVsLeaningKeeper(StatusId.CoverNear,
+                Card("near", 1, CardRole.Attack, AtCorner(Dmg(10), Corner.Near)),
+                Card("far", 1, CardRole.Attack, AtCorner(Dmg(6), Corner.Far)));
+            var a = new GoodPolicy().Decide(d, null, new Rng(1));
+            Assert.That(d.User.Hand[((PlayCardAction)a).HandIndex].Def.Id, Is.EqualTo("far"));
+        }
+
         [Test]
         public void MatchRunner_CompletesMatch()
         {

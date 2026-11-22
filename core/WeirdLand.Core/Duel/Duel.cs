@@ -120,7 +120,7 @@ namespace WeirdLand.Core.Duels
             _ev = new List<GameEvent>();
             User.Discard.AddRange(User.Hand);
             User.Hand.Clear();
-            Enemy.Block = 0;
+            ResetBlock(Enemy);
 
             if (Intent != null && Intent.PassTarget != null)
             {
@@ -131,12 +131,18 @@ namespace WeirdLand.Core.Duels
                 return _ev;
             }
 
+            // Only stacks that exist before the enemy acts tick this round; stacks gained
+            // during the enemy's action start ticking next round (ruling R14 a).
+            var userBefore = TimedSnapshot(User);
+            var enemyBefore = TimedSnapshot(Enemy);
+
             var card = Intent == null ? null : Intent.Card;
             if (card != null)
             {
                 _ev.Add(new CardPlayed(false, card.Def.Id));
                 foreach (var e in card.Effects)
                 {
+                    if (AppliesOnReveal(e)) continue; // already applied when the intent was revealed
                     _ev.AddRange(EffectResolver.Apply(e, Enemy, User, Kind, DrawEvent));
                     if (CheckOutcome()) break;
                 }
@@ -147,8 +153,8 @@ namespace WeirdLand.Core.Duels
             Intent = null;
             if (Outcome.HasValue) return _ev;
 
-            Tick(User);
-            Tick(Enemy);
+            Tick(User, userBefore);
+            Tick(Enemy, enemyBefore);
 
             if (Turn >= MaxTurns)
             {
@@ -194,22 +200,49 @@ namespace WeirdLand.Core.Duels
 
         private void StartUserTurn()
         {
-            User.Block = 0;
+            _ev.Add(new TurnStarted(Turn));
+            ResetBlock(User);
             int energy = DuelRules.EnergyPerTurn + (Turn == 1 ? _setup.UserEnergyBonusTurn1 : 0) - _setup.UserEnergyPenalty;
             User.Energy = Math.Max(0, energy);
             _ev.Add(new EnergyChanged(true, User.Energy));
             DrawEvent(User, DuelRules.HandSize);
             Intent = EnemyAi.ChooseIntent(this, _rng);
             _ev.Add(new IntentRevealed(Intent.Card?.Def.Id, Intent.PassTarget?.Id));
+
+            // The keeper's shown lean is the lean in effect while the user shoots (ruling R14 b).
+            if (Intent.Card != null)
+                foreach (var e in Intent.Card.Effects)
+                    if (AppliesOnReveal(e)) _ev.AddRange(EffectResolver.Apply(e, Enemy, User, Kind, DrawEvent));
         }
 
-        private static void Tick(Combatant c)
+        /// <summary>Enemy intent effects that take effect on reveal instead of at EndTurn: self Cover statuses.</summary>
+        private static bool AppliesOnReveal(EffectDef e)
+            => e.Type == EffectType.Status && e.Target == EffectTarget.Self && e.Status.HasValue
+               && (e.Status.Value == StatusId.CoverNear || e.Status.Value == StatusId.CoverFar);
+
+        private void ResetBlock(Combatant c)
         {
-            foreach (var s in Ticking)
+            if (c.Block <= 0) return;
+            c.Block = 0;
+            _ev.Add(new BlockReset(c.IsUser));
+        }
+
+        private static int[] TimedSnapshot(Combatant c)
+        {
+            var n = new int[Ticking.Length];
+            for (int i = 0; i < Ticking.Length; i++) n[i] = c.StatusOf(Ticking[i]);
+            return n;
+        }
+
+        private void Tick(Combatant c, int[] before)
+        {
+            for (int i = 0; i < Ticking.Length; i++)
             {
+                var s = Ticking[i];
                 int n = c.StatusOf(s);
-                if (n <= 0) continue;
+                if (before[i] <= 0 || n <= 0) continue;
                 if (n == 1) c.Statuses.Remove(s); else c.Statuses[s] = n - 1;
+                _ev.Add(new StatusChanged(c.IsUser, s, n - 1));
             }
         }
 
