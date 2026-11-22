@@ -35,6 +35,8 @@ namespace WeirdLand.Unity
         public float HpFraction => _hpFill.anchorMax.x;
         public bool BlockVisible => _block.activeSelf;
         public bool BallVisible => _ball.activeSelf;
+        public RectTransform Ball => (RectTransform)_ball.transform;
+        public RectTransform BlockBadge => (RectTransform)_block.transform;
         public IReadOnlyList<StatusChip> Chips => _chips;
 
         public void Setup(string playerName, string hpLabel, Color color, bool facingLeft)
@@ -44,6 +46,10 @@ namespace WeirdLand.Unity
             foreach (var g in _tinted) g.color = color;
             var s = _body.localScale;
             _body.localScale = new Vector3(facingLeft ? -Mathf.Abs(s.x) : Mathf.Abs(s.x), s.y, s.z);
+            // The badge sits outside the body, so mirror it by hand: it stays behind the figure either way.
+            var badge = BlockBadge;
+            var p = badge.anchoredPosition;
+            badge.anchoredPosition = new Vector2(facingLeft ? Mathf.Abs(p.x) : -Mathf.Abs(p.x), p.y);
         }
 
         public void SetHp(int hp, int max)

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Batch-mode wrapper for the WeirdLand Unity project.
-# Usage: tools/unity.sh <setup|prefabs|tests [editmode|playmode|all]>
+# Usage: tools/unity.sh <setup|prefabs|scenes|tests [editmode|playmode|all]|shot>
 set -u
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,7 +14,7 @@ PROJECT="$ROOT/unity"
 LOGS="$PROJECT/Logs"
 
 usage() {
-    echo "Usage: tools/unity.sh <setup|prefabs|tests [editmode|playmode|all]>" >&2
+    echo "Usage: tools/unity.sh <setup|prefabs|scenes|tests [editmode|playmode|all]|shot>" >&2
     exit 64
 }
 
@@ -57,20 +57,37 @@ cmd_prefabs() {
     return $code
 }
 
+cmd_scenes() {
+    # SceneBuilder.BuildAll regenerates the prefabs first, then the sandbox scene and build settings.
+    "$UNITY_EXE" -batchmode -projectPath "$(winpath "$PROJECT")" \
+        -executeMethod WeirdLand.Unity.EditorTools.SceneBuilder.BuildAll -quit \
+        -logFile "$(winpath "$LOGS/scenes.log")"
+    local code=$?
+    if [ $code -ne 0 ]; then
+        echo "scenes failed (exit $code). Last 40 log lines:"
+        tail -n 40 "$LOGS/scenes.log"
+    else
+        echo "scenes: built (log: $LOGS/scenes.log)"
+    fi
+    return $code
+}
+
 # Reads one attribute from the root <test-run> element of a results file.
 run_attr() {
     grep -m1 -o "<test-run [^>]*" "$1" | grep -o " $2=\"[^\"]*\"" | head -n1 | sed 's/.*="\(.*\)"/\1/'
 }
 
+# run_platform <EditMode|PlayMode> [extra Unity args...]
 run_platform() {
     local platform="$1"
+    shift
     local lower
     lower="$(echo "$platform" | tr '[:upper:]' '[:lower:]')"
     local xml="$LOGS/tests-$lower.xml"
     local log="$LOGS/tests-$lower.log"
     rm -f "$xml"
     "$UNITY_EXE" -batchmode -projectPath "$(winpath "$PROJECT")" -runTests -testPlatform "$platform" \
-        -testResults "$(winpath "$xml")" -logFile "$(winpath "$log")"
+        -testResults "$(winpath "$xml")" -logFile "$(winpath "$log")" "$@"
     local code=$?
     # Unity: 0 all passed, 2 some tests failed, 3 run error. Anything else
     # (e.g. 1 for "Scripts have compiler errors") is reported as a run error.
@@ -108,11 +125,30 @@ cmd_tests() {
     return $result
 }
 
+cmd_shot() {
+    # Rendering needs a graphics device, so never -nographics here.
+    local shots="$PROJECT/Screenshots"
+    rm -f "$shots"/*.png
+    WEIRDLAND_SHOTS=1 run_platform PlayMode -testFilter WeirdLand.Unity.Tests.ScreenshotTests
+    local code=$?
+    local found=0
+    for f in "$shots"/*.png; do
+        [ -f "$f" ] || continue
+        echo "  $f"
+        found=$((found + 1))
+    done
+    echo "shot: $found PNG file(s) in $shots"
+    if [ $code -eq 0 ] && [ $found -eq 0 ]; then code=3; fi
+    return $code
+}
+
 [ $# -ge 1 ] || usage
 command="$1"; shift
 case "$command" in
     setup) preflight; cmd_setup; exit $? ;;
     prefabs) preflight; cmd_prefabs; exit $? ;;
+    scenes) preflight; cmd_scenes; exit $? ;;
+    shot) preflight; cmd_shot; exit $? ;;
     tests) preflight; cmd_tests "$@"; exit $? ;;
     *) usage ;;
 esac
