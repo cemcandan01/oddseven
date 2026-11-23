@@ -18,12 +18,25 @@ usage() {
     exit 64
 }
 
+# True when a Unity editor process has this project open (matched on its command line).
+editor_running() {
+    local proj
+    proj="$(winpath "$PROJECT" | tr '\134' '/' | tr '[:upper:]' '[:lower:]')"
+    command -v powershell.exe >/dev/null 2>&1 || return 1
+    powershell.exe -NoProfile -Command \
+        "Get-CimInstance Win32_Process -Filter \"Name='Unity.exe'\" | ForEach-Object { \$_.CommandLine }" 2>/dev/null \
+        | tr '\134' '/' | tr '[:upper:]' '[:lower:]' \
+        | grep -v -- "-batchmode" | grep -- "-projectpath" | grep -qF "$proj"
+}
+
 preflight() {
     if [ ! -f "$PROJECT/Assets/Plugins/WeirdLand/WeirdLand.Core.dll" ]; then
         echo "WeirdLand.Core.dll missing, building core..."
         dotnet build "$ROOT/core" || exit 1
     fi
-    if tasklist 2>/dev/null | grep -qi "^Unity.exe" && [ -f "$PROJECT/Temp/UnityLockfile" ]; then
+    # Only a real editor on this project counts (Unity.exe with -projectpath <this project>), not the Hub's
+    # "unity.exe serve" helper. The lockfile check applies only when such an editor is running.
+    if editor_running && [ -f "$PROJECT/Temp/UnityLockfile" ]; then
         echo "Unity editörü bu projeyi açık tutuyor, kapatıp tekrar dene."
         exit 1
     fi

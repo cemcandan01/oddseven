@@ -71,6 +71,15 @@
     "result.timeout": "Süre doldu, savunmaya yardım geldi.",
     "result.again": "Aynı seed ile tekrar",
     "result.newSeed": "Yeni seed",
-    "result.back": "Seçime dön"
+    "result.back": "Seçime dön",
+    "grid.advance": "İlerle",
+    "grid.pass": "Pas at",
+    "grid.field": "Saha",
+    "grid.move": "Hamle {0}/{1}",
+    "grid.shotChance": "Gol fırsatı!",
+    "grid.possessionLost": "Top kaybedildi",
+    "grid.entry": "Maç (ızgara)",
+    "menu.title": "Sandbox",
+    "menu.duel": "Düello"
   }
 }

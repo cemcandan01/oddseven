@@ -31,6 +31,15 @@ namespace WeirdLand.Unity
             return Run(Duel.Begin, ct);
         }
 
+        /// <summary>For a duel someone else already began (the grid match): plays its opening events instead of calling Begin.</summary>
+        public UniTask<bool> Attach(IReadOnlyList<GameEvent> openingEvents, CancellationToken ct)
+        {
+            if (openingEvents == null) throw new ArgumentNullException(nameof(openingEvents));
+            if (IsBusy || _begun) return UniTask.FromResult(false);
+            _begun = true;
+            return Run(() => openingEvents, ct);
+        }
+
         public UniTask<bool> PlayCard(int handIndex, CancellationToken ct)
         {
             if (!CanCommand() || !DuelPreview.CanPlay(Duel, handIndex)) return UniTask.FromResult(false);

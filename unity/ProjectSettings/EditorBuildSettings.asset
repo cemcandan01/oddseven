@@ -8,5 +8,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/WeirdLand/Scenes/DuelSandbox.unity
     guid: 9e75309a05ae9c14d953cbbcbab39125
+  - enabled: 1
+    path: Assets/WeirdLand/Scenes/GridMatch.unity
+    guid: fb6e7c2b8756d264e973461eedbbfde5
   m_configObjects: {}
   m_UseUCBPForAssetBundles: 0

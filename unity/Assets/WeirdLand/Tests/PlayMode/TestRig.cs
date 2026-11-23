@@ -9,6 +9,7 @@ using WeirdLand.Core;
 using WeirdLand.Core.Ai;
 using WeirdLand.Core.Data;
 using WeirdLand.Core.Duels;
+using WeirdLand.Core.Match;
 
 namespace WeirdLand.Unity.Tests
 {
@@ -44,6 +45,37 @@ namespace WeirdLand.Unity.Tests
             var duel = DuelScenarios.Create(Data.Game, scenario, seed);
             screen.Open(duel, Data, seed);
             return (screen, duel);
+        }
+
+        /// <summary>A grid match, mavi vs kirmizi, on a fresh rig canvas; kickoff starts playing at once.</summary>
+        public static GridMatchController CreateGrid(uint seed)
+        {
+            var canvas = CreateCanvas();
+            var go = new GameObject("GridMatch", typeof(RectTransform));
+            go.transform.SetParent(canvas.transform, false);
+            var g = go.AddComponent<GridMatchController>();
+            g.Open(Data, "mavi", "kirmizi", seed);
+            return g;
+        }
+
+        /// <summary>Yields until the grid controller is idle, autoplaying any duel it opens on the way.</summary>
+        public static IEnumerator Settle(GridMatchController g)
+        {
+            for (int i = 0; i < MaxDecisions; i++)
+            {
+                for (int f = 0; f < MaxIdleFrames && g.IsBusy && !g.DuelOpen; f++) yield return null;
+                if (!g.DuelOpen) break;
+                var duel = g.Match.CurrentDuel;
+                yield return Autoplay(g.DuelView, duel, 1);
+                for (int f = 0; f < MaxIdleFrames && g.DuelOpen && g.Match.CurrentDuel == duel; f++) yield return null;
+            }
+            Assert.That(g.IsBusy, Is.False, "grid controller stayed busy");
+        }
+
+        /// <summary>Settles until it is the user's move (or the match is over).</summary>
+        public static IEnumerator UserTurn(GridMatchController g)
+        {
+            yield return Settle(g);
         }
 
         /// <summary>Orthographic camera, ScreenSpaceCamera canvas scaled from 1920x1080 (match 0.5), Input System event system.</summary>

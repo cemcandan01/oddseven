@@ -5,6 +5,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using WeirdLand.Core.Duels;
+using WeirdLand.Core.Match;
 
 namespace WeirdLand.Unity.Tests
 {
@@ -53,6 +54,37 @@ namespace WeirdLand.Unity.Tests
 
                 TestRig.Teardown();
                 yield return null;
+            }
+        }
+
+        /// <summary>Grid match, seed 1: grid-1 on the user's first move, grid-2 with the pass lines, grid-3 in a duel.</summary>
+        [UnityTest, Timeout(300000)]
+        public IEnumerator CaptureGrid()
+        {
+            if (Environment.GetEnvironmentVariable("WEIRDLAND_SHOTS") != "1")
+                Assert.Ignore("Set WEIRDLAND_SHOTS=1 (tools/unity.sh shot) to take screenshots.");
+            var dir = Path.GetFullPath(Path.Combine(Application.dataPath, "../Screenshots"));
+            Directory.CreateDirectory(dir);
+            var g = TestRig.CreateGrid(1);
+            yield return TestRig.UserTurn(g);
+            yield return Shoot(Path.Combine(dir, "grid-1.png"));
+            g.ClickPassMode();
+            yield return null;
+            yield return Shoot(Path.Combine(dir, "grid-2.png"));
+            for (int i = 0; i < 80 && !g.DuelOpen && g.Match.Phase == GridPhase.AwaitingAction; i++)
+            {
+                var cells = g.Match.ReachableCells();
+                var best = cells[0];
+                foreach (var c in cells) if (c.X > best.X) best = c;
+                g.ClickAdvance();
+                g.ClickCell(best);
+                for (int f = 0; f < TestRig.MaxIdleFrames && g.IsBusy && !g.DuelOpen; f++) yield return null;
+                if (!g.DuelOpen) yield return TestRig.UserTurn(g);
+            }
+            if (g.DuelOpen)
+            {
+                yield return TestRig.Idle(g.DuelView);
+                yield return Shoot(Path.Combine(dir, "grid-3.png"));
             }
         }
 

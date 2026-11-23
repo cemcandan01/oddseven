@@ -52,7 +52,21 @@ namespace WeirdLand.Unity
         public int HandCardCount => _hand != null ? _hand.Count : 0;
         public string IntentText => _ui != null && _ui.Intent.gameObject.activeSelf ? _ui.Intent.Text : "";
 
-        public void Open(Duel duel, LoadedData data, uint seed)
+        public void Open(Duel duel, LoadedData data, uint seed) => OpenCore(duel, data, seed, null, false);
+
+        /// <summary>
+        /// Opens a duel that has already begun (grid match) and plays <paramref name="openingEvents"/> instead of
+        /// calling Begin. Embedded: no back button and no retry buttons; the caller closes the screen.
+        /// </summary>
+        public void OpenBegun(Duel duel, LoadedData data, uint seed, IReadOnlyList<GameEvent> openingEvents)
+        {
+            if (openingEvents == null) throw new ArgumentNullException(nameof(openingEvents));
+            OpenCore(duel, data, seed, openingEvents, true);
+        }
+
+        public bool Embedded { get; private set; }
+
+        private void OpenCore(Duel duel, LoadedData data, uint seed, IReadOnlyList<GameEvent> opening, bool embedded)
         {
             if (duel == null) throw new ArgumentNullException(nameof(duel));
             if (data == null) throw new ArgumentNullException(nameof(data));
@@ -68,10 +82,14 @@ namespace WeirdLand.Unity
                 _hand = new HandView(_ui.Hand, _ui.Fx, _ui.DeckPoint, _cat, _tw, OnCardClicked);
             }
             _hand.Text = data.Text;
+            Embedded = embedded;
             ResetView();
+            _ui.Back.gameObject.SetActive(!embedded);
+            _ui.Result.SetButtonsVisible(!embedded);
             _cts = new CancellationTokenSource();
             Controller = new DuelController(duel, this);
-            Controller.Begin(_cts.Token).Forget();
+            if (opening == null) Controller.Begin(_cts.Token).Forget();
+            else Controller.Attach(opening, _cts.Token).Forget();
         }
 
         // ---- input: buttons and tests use the same hooks ----

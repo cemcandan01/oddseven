@@ -10,6 +10,7 @@ namespace WeirdLand.Unity
     {
         private TMP_Text _title;
         private TMP_Text _detail;
+        private readonly System.Collections.Generic.List<GameObject> _buttons = new System.Collections.Generic.List<GameObject>();
 
         public bool IsShown => gameObject.activeSelf;
         public CanvasGroup Group { get; private set; }
@@ -39,6 +40,7 @@ namespace WeirdLand.Unity
             {
                 var b = UiFactory.Button(cat, box, "Button_" + labels[i], text.Get(labels[i]), actions[i]);
                 UiFactory.Place((RectTransform)b.transform, new Vector2(0.5f, 0), new Vector2((i - 1) * 275, 40), new Vector2(260, 72));
+                overlay._buttons.Add(b.gameObject);
             }
             root.gameObject.SetActive(false);
             return overlay;
@@ -50,6 +52,11 @@ namespace WeirdLand.Unity
             _detail.text = detail ?? "";
             transform.SetAsLastSibling();
             gameObject.SetActive(true);
+        }
+
+        public void SetButtonsVisible(bool visible)
+        {
+            foreach (var b in _buttons) b.SetActive(visible);
         }
 
         public void Hide() => gameObject.SetActive(false);
