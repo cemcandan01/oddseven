@@ -21,6 +21,7 @@ namespace WeirdLand.Unity
         public const string ShotChance = "grid.shotChance";
         public const string PossessionLost = "grid.possessionLost";
         public const string Entry = "grid.entry";
+        public const string Error = "grid.error";
         public const string MenuTitle = "menu.title";
         public const string MenuDuel = "menu.duel";
     }
@@ -60,6 +61,15 @@ namespace WeirdLand.Unity
         public string ScoreText => _scoreLabel != null ? _scoreLabel.text : "";
         public bool ResultShown => _result != null && _result.IsShown;
         public event Action BackRequested;
+
+        /// <summary>True once a failure stopped the match and the error route (result overlay) is shown.</summary>
+        public bool Failed { get; private set; }
+
+        /// <summary>Raised after each MatchMoveAdvanced is shown, once the board's stun look is refreshed.</summary>
+        public event Action<int> MoveShown;
+
+        /// <summary>Test hook: when set, called at the start of each duel step; an exception it throws is a failure.</summary>
+        public Action DuelStepHook { get; set; }
 
         public void Open(LoadedData data, string userTeam, string oppTeam, uint seed)
         {
@@ -121,7 +131,7 @@ namespace WeirdLand.Unity
             Panel.SetVisible(show);
         }
 
-        private bool CanAct() => Match != null && _cts != null && !IsBusy && Panel.Visible
+        private bool CanAct() => Match != null && !Failed && _cts != null && !IsBusy && Panel.Visible
             && Match.Phase == GridPhase.AwaitingAction && Match.UserHasBall;
 
         private void ClearMode()
@@ -154,7 +164,7 @@ namespace WeirdLand.Unity
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                SyncAll();
+                Fail();
             }
             finally
             {
@@ -219,6 +229,9 @@ namespace WeirdLand.Unity
                         break;
                     case MatchMoveAdvanced mm:
                         SetMove(mm.Move);
+                        // The match state equals the end of this list here; recovered players lose the faded look.
+                        Board.SyncStuns(Match);
+                        MoveShown?.Invoke(mm.Move);
                         break;
                     case MatchEnded me:
                         SetScore(me.UserScore, me.OppScore);
@@ -233,14 +246,18 @@ namespace WeirdLand.Unity
             }
         }
 
-        /// <summary>The opening events of the duel a list opens: everything after its last DuelTriggered.</summary>
+        /// <summary>
+        /// The opening events of the duel a list opens: everything after its DuelTriggered. Core guarantees a
+        /// list holds at most one DuelTriggered and nothing but the duel's Begin() after it (pinned by a core test),
+        /// so Play and this method agree on the same index.
+        /// </summary>
         public static IReadOnlyList<GameEvent> DuelOpening(IReadOnlyList<GameEvent> events)
         {
-            int last = -1;
-            for (int i = 0; i < events.Count; i++) if (events[i] is DuelTriggered) last = i;
+            int at = -1;
+            for (int i = 0; i < events.Count; i++) if (events[i] is DuelTriggered) { at = i; break; }
             var r = new List<GameEvent>();
-            if (last < 0) return r;
-            for (int j = last + 1; j < events.Count; j++) r.Add(events[j]);
+            if (at < 0) return r;
+            for (int j = at + 1; j < events.Count; j++) r.Add(events[j]);
             return r;
         }
 
@@ -252,6 +269,7 @@ namespace WeirdLand.Unity
             var duel = Match.CurrentDuel;
             DuelView.OpenBegun(duel, _data, _seed, opening);
             DuelView.transform.SetAsLastSibling();
+            DuelStepHook?.Invoke();
             while (!duel.Outcome.HasValue || DuelView.Controller.IsBusy) await UniTask.Yield(ct);
             await Delay(T(_cat.Timings.Banner) * 1.5f, ct);
             DuelView.gameObject.SetActive(false);
@@ -297,6 +315,7 @@ namespace WeirdLand.Unity
                 () => BackRequested?.Invoke());
 
             _mode = Mode.None;
+            Failed = false;
             _shownUser = _shownOpp = 0;
             SetScore(0, 0);
             SetMove(0);
@@ -313,10 +332,27 @@ namespace WeirdLand.Unity
             if (Match.Phase == GridPhase.Ended && !_result.IsShown) ShowResult(Match.UserScore, Match.OppScore);
         }
 
+        // Unrecoverable failure: close the duel, stop input and show the result overlay as the way out
+        // (again / new seed / back to menu).
+        private void Fail()
+        {
+            Failed = true;
+            try
+            {
+                if (DuelView != null) DuelView.gameObject.SetActive(false);
+                ClearMode();
+                Board.Sync(Match);
+                if (Panel != null) Panel.SetInteractable(false);
+            }
+            catch (Exception ex2) { Debug.LogException(ex2); }
+            _result.Show(_data.Text.Get(GridUiKeys.Error),
+                _user.Name + "  " + Match.UserScore + " - " + Match.OppScore + "  " + _opp.Name);
+        }
+
         private void RefreshButtons()
         {
             if (Panel == null || Match == null) return;
-            Panel.SetInteractable(!IsBusy && Match.Phase == GridPhase.AwaitingAction && Match.UserHasBall);
+            Panel.SetInteractable(!Failed && !IsBusy && Match.Phase == GridPhase.AwaitingAction && Match.UserHasBall);
         }
 
         private void SetMove(int move) => _moveLabel.text = _data.Text.Format(GridUiKeys.Move, move, MatchRules.GridMatchMoves);

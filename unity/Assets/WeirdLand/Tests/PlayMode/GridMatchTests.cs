@@ -105,6 +105,66 @@ namespace WeirdLand.Unity.Tests
             Assert.That(g.Match.Move, Is.EqualTo(move), "Saha costs no move");
         }
 
+        [UnityTest, Timeout(180000)]
+        public IEnumerator GridMatch_DuelFailure_ShowsExitRoute_AndClosesDuel()
+        {
+            var g = TestRig.CreateGrid(1);
+            g.DuelStepHook = () => throw new System.InvalidOperationException("test failure in duel step");
+            LogAssert.ignoreFailingMessages = true;
+            for (int i = 0; i < 80 && !g.Failed && g.Match.Phase != GridPhase.Ended; i++)
+            {
+                yield return TestRig.UserTurn(g);
+                if (g.Failed || g.Match.Phase != GridPhase.AwaitingAction) break;
+                var cells = g.Match.ReachableCells();
+                g.ClickAdvance();
+                g.ClickCell(cells.OrderByDescending(c => c.X).First());
+                for (int f = 0; f < TestRig.MaxIdleFrames && g.IsBusy && !g.Failed; f++) yield return null;
+            }
+            LogAssert.ignoreFailingMessages = false;
+            Assert.That(g.Failed, Is.True, "no duel ran, so the failure never fired");
+            Assert.That(g.Match.Phase, Is.EqualTo(GridPhase.InDuel), "failure left the match mid-duel");
+            Assert.That(g.ResultShown, Is.True, "exit route (result overlay with back button) visible");
+            Assert.That(g.DuelOpen, Is.False, "duel view closed");
+            Assert.That(g.IsBusy, Is.False);
+            bool back = false;
+            g.BackRequested += () => back = true;
+            var button = g.GetComponentsInChildren<UnityEngine.UI.Button>()
+                .First(b => b.name == "Button_" + WeirdLand.Core.Data.UiKeys.ResultBack);
+            Assert.That(button.gameObject.activeInHierarchy, Is.True, "back button shown");
+            button.onClick.Invoke();
+            Assert.That(back, Is.True, "back routes to the menu");
+        }
+
+        [UnityTest, Timeout(180000)]
+        public IEnumerator GridMatch_StunLook_RefreshedAfterEveryMove()
+        {
+            var g = TestRig.CreateGrid(1);
+            int checks = 0, recovered = 0;
+            var wasStunned = new System.Collections.Generic.HashSet<string>();
+            g.MoveShown += _ =>
+            {
+                checks++;
+                foreach (var p in g.Match.Players)
+                {
+                    Assert.That(g.Board.IsShownStunned(p.Def.Id), Is.EqualTo(p.Stun > 0), p.Def.Id + " stun look after move");
+                    if (p.Stun > 0) wasStunned.Add(p.Def.Id);
+                    else if (wasStunned.Remove(p.Def.Id)) recovered++;
+                }
+            };
+            for (int i = 0; i < 80 && g.Match.Phase != GridPhase.Ended && (checks < 6 || recovered == 0); i++)
+            {
+                yield return TestRig.UserTurn(g);
+                if (g.DuelOpen) { yield return TestRig.Autoplay(g.DuelView, g.Match.CurrentDuel, (uint)i); continue; }
+                if (g.Match.Phase != GridPhase.AwaitingAction || !g.Match.UserHasBall) continue;
+                var cells = g.Match.ReachableCells();
+                g.ClickAdvance();
+                g.ClickCell(cells.OrderByDescending(c => c.X).First());
+                for (int f = 0; f < TestRig.MaxIdleFrames && g.IsBusy && !g.DuelOpen; f++) yield return null;
+            }
+            Assert.That(checks, Is.GreaterThan(0), "no move was shown");
+            Assert.That(recovered, Is.GreaterThan(0), "no stunned player recovered during the run");
+        }
+
         private static void AssertBoardMatchesState(GridMatchController g)
         {
             foreach (var p in g.Match.Players)

@@ -79,6 +79,7 @@
     "grid.shotChance": "Gol fırsatı!",
     "grid.possessionLost": "Top kaybedildi",
     "grid.entry": "Maç (ızgara)",
+    "grid.error": "Bir hata oluştu. Maç sürdürülemiyor.",
     "menu.title": "Sandbox",
     "menu.duel": "Düello"
   }

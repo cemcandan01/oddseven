@@ -137,6 +137,12 @@ namespace WeirdLand.Unity
             if (match.Carrier != null) PlaceBall(match.Carrier.Def.Id);
         }
 
+        /// <summary>Refreshes only the stun look of every token from the match state.</summary>
+        public void SyncStuns(GridMatch match)
+        {
+            foreach (var p in match.Players) SetStunned(p.Def.Id, p.Stun > 0);
+        }
+
         public void SetStunned(string id, bool stunned)
         {
             var t = _tokens[id];
