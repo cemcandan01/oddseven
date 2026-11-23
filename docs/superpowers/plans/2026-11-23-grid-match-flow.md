@@ -30,7 +30,7 @@ Spec'in ima ettiği ama görev testlerinin doğrudan yakalamadığı, kullanıc�
 
 ---
 
-### Görev 1: Izgara geometrisi ve kurallar
+### Task 1: Izgara geometrisi ve kurallar
 
 **Dosyalar:**
 - Oluştur: `core/WeirdLand.Core/Match/Grid/GridGeometry.cs`
@@ -88,7 +88,7 @@ git add core && git commit -m "core: grid geometry and grid match constants"
 
 ---
 
-### Görev 2: GridMatch durumu, başlama ve olaylar
+### Task 2: GridMatch durumu, başlama ve olaylar
 
 **Dosyalar:**
 - Oluştur: `core/WeirdLand.Core/Match/Grid/GridMatch.cs`, `core/WeirdLand.Core/Match/Grid/GridPlayer.cs`
@@ -162,7 +162,7 @@ git add core && git commit -m "core: grid match state, kickoff and grid events"
 
 ---
 
-### Görev 3: İlerle eylemi ve ulaşılabilir kutular
+### Task 3: İlerle eylemi ve ulaşılabilir kutular
 
 **Dosyalar:**
 - Değiştir: `core/WeirdLand.Core/Match/Grid/GridMatch.cs`
@@ -193,7 +193,7 @@ Konumları zorlamak için `internal void SetPos(string playerId, Cell c)` ve `in
 
 ---
 
-### Görev 4: Hareket yapay zekâsı
+### Task 4: Hareket yapay zekâsı
 
 **Dosyalar:**
 - Oluştur: `core/WeirdLand.Core/Match/Grid/GridMovement.cs`
@@ -228,7 +228,7 @@ Konumları zorlamak için `internal void SetPos(string playerId, Cell c)` ve `in
 
 ---
 
-### Görev 5: Düello tetikleme ve düello sonrası
+### Task 5: Düello tetikleme ve düello sonrası
 
 **Dosyalar:**
 - Değiştir: `GridMatch.cs`
@@ -266,7 +266,7 @@ Konumları zorlamak için `internal void SetPos(string playerId, Cell c)` ve `in
 
 ---
 
-### Görev 6: Pas
+### Task 6: Pas
 
 **Dosyalar:**
 - Oluştur: `core/WeirdLand.Core/Match/Grid/GridPass.cs`
@@ -305,7 +305,7 @@ Konumları zorlamak için `internal void SetPos(string playerId, Cell c)` ve `in
 
 ---
 
-### Görev 7: Şut bölgesi, hamle sayacı ve maç sonu
+### Task 7: Şut bölgesi, hamle sayacı ve maç sonu
 
 **Dosyalar:**
 - Değiştir: `GridMatch.cs`
@@ -337,7 +337,7 @@ Konumları zorlamak için `internal void SetPos(string playerId, Cell c)` ve `in
 
 ---
 
-### Görev 8: Karar politikaları, koşturucu ve altın test
+### Task 8: Karar politikaları, koşturucu ve altın test
 
 **Dosyalar:**
 - Oluştur: `core/WeirdLand.Core/Ai/GridPolicy.cs`, `core/WeirdLand.Core/Ai/GridRunner.cs`
@@ -369,7 +369,7 @@ Konumları zorlamak için `internal void SetPos(string playerId, Cell c)` ve `in
 
 ---
 
-### Görev 9: Simülatörde ızgara modu ve denge ölçümü
+### Task 9: Simülatörde ızgara modu ve denge ölçümü
 
 **Dosyalar:**
 - Değiştir: `core/WeirdLand.Sim/Program.cs`, `core/WeirdLand.Sim/SimReport.cs`
@@ -393,7 +393,7 @@ Spec bölüm 8 hedefleri: ortalama düello sayısı 10–25, iyi ve rastgele pol
 
 ---
 
-### Görev 10: Unity'de ızgara maç sahnesi
+### Task 10: Unity'de ızgara maç sahnesi
 
 **Dosyalar:**
 - Oluştur: `unity/Assets/WeirdLand/Runtime/Grid/GridMatchController.cs`, `GridBoardView.cs`, `GridActionPanel.cs`
