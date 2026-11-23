@@ -12,7 +12,8 @@ namespace WeirdLand.Core.Ai
         GridAction Decide(GridMatch m, Rng rng);
     }
 
-    /// <summary>Spec 6.7: best of pass score and advance score, fixed tie order.</summary>
+    /// <summary>Spec 6.7: best of pass score and advance score, fixed tie order.
+    /// Never draws from the given Rng: the decision is a pure function of the match state.</summary>
     public sealed class GreedyGridPolicy : IGridPolicy
     {
         // Columns from x to the last column in the carrier side's attack direction.

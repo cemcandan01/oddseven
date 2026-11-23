@@ -45,8 +45,12 @@ namespace WeirdLand.Core.Match
             }
         }
 
+        private bool _kickedOff;
+
         public IReadOnlyList<GameEvent> Kickoff()
         {
+            if (_kickedOff) throw new InvalidOperationException("Kickoff already happened.");
+            _kickedOff = true;
             var ev = new List<GameEvent>();
             Restart(_rng.Chance(0.5), ev);
             return ev;
@@ -165,6 +169,8 @@ namespace WeirdLand.Core.Match
         }
 
         // Opponent carrier acts on its own: greedy decision (spec 6.7), deterministic.
+        // GreedyGridPolicy never draws from the Rng it is given, so the decision itself leaves _rng untouched;
+        // only the resulting Advance/Pass may draw (pass roll, duel fork).
         public IReadOnlyList<GameEvent> ResolveOpponentMove()
         {
             if (Phase != GridPhase.AwaitingAction)
@@ -212,14 +218,16 @@ namespace WeirdLand.Core.Match
 
         private bool TryOpenDuel(List<GameEvent> ev)
         {
+            // Defender = the first adjacent, non-keeper, non-stunned opponent in player-list order
+            // (user team then opponent team, each in Slot order). Adjacent players are all at distance 1,
+            // so there is no distance tie-break.
             GridPlayer defender = null;
-            int best = int.MaxValue;
-            foreach (var p in _players) // Slot order within each team; strict < keeps first on ties
+            foreach (var p in _players)
             {
                 if (p.IsUser == Carrier.IsUser || p.Def.Slot == Slot.GK || p.Stun > 0) continue;
                 if (!GridGeometry.Adjacent(p.Pos, Carrier.Pos)) continue;
-                int d = GridGeometry.Distance(p.Pos, Carrier.Pos);
-                if (d < best) { best = d; defender = p; }
+                defender = p;
+                break;
             }
             if (defender == null) return false;
 
@@ -287,5 +295,7 @@ namespace WeirdLand.Core.Match
         internal void SetPhase(GridPhase phase) => Phase = phase;
 
         internal void SetMove(int move) => Move = move;
+
+        internal uint RngState => _rng.State; // test hook
     }
 }
