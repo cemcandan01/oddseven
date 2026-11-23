@@ -135,6 +135,8 @@ Rakip topa sahipken her hamlede şunları puanlar:
 
 En yüksek puanlı eylemi seçer. Eşitlikte sabit bir sıra kullanılır.
 
+*(Not, 2026-11-23: uygulamada ilerleme puanı kaleye yakınlık − 0,25 × bitişikteki rakip oyuncu sayısıdır; bu katsayı planda onaylandı.)*
+
 ### 6.8 Şut bölgesi (geçici kural)
 Taşıyıcı şut bölgesine girdiğinde atak biter. Bölgede duran bir takım arkadaşına başarılı pas da "girmek" sayılır. Bölgeye giriş ancak hamlenin düello kontrolünden sonra sayılır, yani bölgeye giren taşıyıcının bitişiğinde rakip varsa önce düello oynanır *(benim kararım: savunmaya bölgede son bir şans vermek için)*. Kazanılırsa, bir `ShotChance` olayı üretilir ve **geçici olarak gol sayılır**. Ardından yeni atak, gol yiyen takımın CM'sinde başlar. Bu kural, şut düellosu tasarlandığında değişecek. Amaç şimdilik maçların bir skoru olması ve simülatörün ölçüm yapabilmesi.
 
@@ -148,6 +150,7 @@ Taşıyıcı şut bölgesine girdiğinde atak biter. Bölgede duran bir takım a
 - Maç sabit sayıda hamleden oluşur. Başlangıç değeri 90 hamle (`MatchRules.GridMatchMoves`).
 - Düello içindeki turlar hamle sayılmaz.
 - Devre arası bu sürümde yok.
+- *(Not, 2026-11-23: Görev 9'da `GridMatchMoves` 90'dan 25'e ayarlandı, bkz. [ızgara maç ölçümü](../../balance/2026-11-23-grid-match-baseline.md). Bu açık bir tasarım sorunu: hamlelerin yaklaşık %90'ında düello açılıyor, bu yüzden hamle sayısı maç süresini iyi temsil etmiyor.)*
 
 ### 6.10 Çekirdek yapısı
 - Yeni sınıf: `WeirdLand.Core.Match.GridMatch`. Eski `MatchEngine` ve simülatördeki eski mod dokunulmadan kalır.
