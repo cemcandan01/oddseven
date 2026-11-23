@@ -103,6 +103,7 @@ namespace WeirdLand.Core.Tests
                     var r = m.ReachableCells();
                     if (r.Count == 0) break;
                     m.Advance(r[0]);
+                    if (m.Phase == GridPhase.InDuel) { m.CurrentDuel.ForceOutcome(DuelOutcome.AttackerWon); m.CompleteDuel(); }
                     Assert.That(m.Players.Select(p => p.Pos).Distinct().Count(), Is.EqualTo(14), "seed " + seed + " move " + i);
                 }
             }
@@ -118,7 +119,9 @@ namespace WeirdLand.Core.Tests
                 {
                     var r = m.ReachableCells();
                     if (r.Count == 0) break;
-                    foreach (var e in m.Advance(r[r.Count / 2]).OfType<PlayerMoved>())
+                    var ev = m.Advance(r[r.Count / 2]).ToList();
+                    if (m.Phase == GridPhase.InDuel) { m.CurrentDuel.ForceOutcome(DuelOutcome.AttackerWon); ev.AddRange(m.CompleteDuel()); }
+                    foreach (var e in ev.OfType<PlayerMoved>())
                         log.Add(e.PlayerId + ":" + e.FromX + "," + e.FromY + ">" + e.ToX + "," + e.ToY);
                 }
                 return log;

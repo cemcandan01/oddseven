@@ -12,7 +12,9 @@ namespace WeirdLand.Core.Match
     {
         private readonly GameData _data;
         private readonly Rng _rng;
+        private readonly TeamDef _opponentDef;
         private readonly List<GridPlayer> _players = new List<GridPlayer>();
+        private readonly List<string> _stunnedThisMove = new List<string>();
 
         public IReadOnlyList<GridPlayer> Players => _players;
         public GridPlayer Carrier { get; private set; }
@@ -26,6 +28,7 @@ namespace WeirdLand.Core.Match
         public GridMatch(GameData data, TeamDef user, TeamDef opponent, uint seed)
         {
             _data = data;
+            _opponentDef = opponent;
             _rng = new Rng(seed);
             AddTeam(user, true);
             AddTeam(opponent, false);
@@ -101,11 +104,87 @@ namespace WeirdLand.Core.Match
             return ev;
         }
 
-        // Move queue shared by Advance and (later) Pass. Later steps: teammate/opponent movement,
-        // duel check, shot zone and move clock.
+        // Move queue shared by Advance and (later) Pass: movement, duel check, then EndOfMove.
         private void RunMoveTail(List<GameEvent> ev)
         {
             GridMovement.Step(this, ev);
+            if (TryOpenDuel(ev)) return;
+            EndOfMove(ev);
+        }
+
+        // End-of-move hook (Task 7 adds shot zone, Move++ and match end).
+        private void EndOfMove(List<GameEvent> ev)
+        {
+            foreach (var p in _players)
+                if (p.Stun > 0 && !_stunnedThisMove.Contains(p.Def.Id)) p.Stun--;
+            _stunnedThisMove.Clear();
+        }
+
+        private bool TryOpenDuel(List<GameEvent> ev)
+        {
+            GridPlayer defender = null;
+            int best = int.MaxValue;
+            foreach (var p in _players) // Slot order within each team; strict < keeps first on ties
+            {
+                if (p.IsUser == Carrier.IsUser || p.Def.Slot == Slot.GK || p.Stun > 0) continue;
+                if (!GridGeometry.Adjacent(p.Pos, Carrier.Pos)) continue;
+                int d = GridGeometry.Distance(p.Pos, Carrier.Pos);
+                if (d < best) { best = d; defender = p; }
+            }
+            if (defender == null) return false;
+
+            ev.Add(new DuelTriggered(Carrier.Def.Id, defender.Def.Id));
+            var userP = Carrier.IsUser ? Carrier : defender;
+            var oppP = Carrier.IsUser ? defender : Carrier;
+            var setup = new DuelSetup
+            {
+                Kind = DuelKind.Field,
+                UserIsAttacker = UserHasBall,
+                EnemyPowerScalePercent = MatchRules.PowerScalePercent(_opponentDef.Tier),
+                UserPlayer = userP.Def,
+                EnemyPlayer = oppP.Def,
+                UserDeck = userP.Deck,
+                EnemyDeck = oppP.Deck,
+            };
+            CurrentDuel = new Duel(setup, _rng.Fork());
+            Phase = GridPhase.InDuel;
+            ev.AddRange(CurrentDuel.Begin());
+            return true;
+        }
+
+        public IReadOnlyList<GameEvent> CompleteDuel()
+        {
+            var d = CurrentDuel;
+            if (Phase != GridPhase.InDuel || d == null || !d.Outcome.HasValue)
+                throw new InvalidOperationException("No finished duel to complete.");
+            var outcome = d.Outcome.Value;
+            if (outcome != DuelOutcome.AttackerWon && outcome != DuelOutcome.DefenderWon)
+                throw new InvalidOperationException("Unexpected grid duel outcome " + outcome);
+            var ev = new List<GameEvent>();
+            var oldCarrier = Carrier;
+            var defender = _players.Find(p => p.Def.Id == (UserHasBall ? d.Enemy.Player.Id : d.User.Player.Id));
+            if (outcome == DuelOutcome.AttackerWon)
+            {
+                Stun(defender, ev);
+            }
+            else
+            {
+                Stun(oldCarrier, ev);
+                Carrier = defender;
+                UserHasBall = defender.IsUser;
+                ev.Add(new PossessionChanged(UserHasBall, defender.Def.Id));
+                if (TryOpenDuel(ev)) return ev;
+            }
+            EndOfMove(ev);
+            Phase = GridPhase.AwaitingAction;
+            return ev;
+        }
+
+        private void Stun(GridPlayer p, List<GameEvent> ev)
+        {
+            p.Stun = MatchRules.StunMoves;
+            _stunnedThisMove.Add(p.Def.Id);
+            ev.Add(new PlayerStunned(p.Def.Id, MatchRules.StunMoves));
         }
 
         internal void SetPos(string playerId, Cell c) => _players.Find(p => p.Def.Id == playerId).Pos = c;
