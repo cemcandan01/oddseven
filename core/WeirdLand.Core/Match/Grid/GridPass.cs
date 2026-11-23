@@ -43,7 +43,7 @@ namespace WeirdLand.Core.Match
         public static GridPlayer PickInterceptor(GridMatch m, GridPlayer from, GridPlayer to)
         {
             var cands = Interceptors(m, from, to);
-            if (cands.Count > 0) return Nearest(cands, to);
+            if (cands.Count > 0) return Nearest(m, cands, to);
             var adj = new List<GridPlayer>();
             var field = new List<GridPlayer>();
             var any = new List<GridPlayer>();
@@ -55,18 +55,26 @@ namespace WeirdLand.Core.Match
                 field.Add(p);
                 if (GridGeometry.Adjacent(p.Pos, to.Pos)) adj.Add(p);
             }
-            if (adj.Count > 0) return Nearest(adj, to);
-            return Nearest(field.Count > 0 ? field : any, to);
+            if (adj.Count > 0) return Nearest(m, adj, to);
+            return Nearest(m, field.Count > 0 ? field : any, to);
         }
 
-        private static GridPlayer Nearest(IReadOnlyList<GridPlayer> list, GridPlayer to)
+        private static int IndexOf(GridMatch m, GridPlayer p)
+        {
+            for (int i = 0; i < m.Players.Count; i++) if (m.Players[i] == p) return i;
+            return int.MaxValue;
+        }
+
+        private static GridPlayer Nearest(GridMatch m, IReadOnlyList<GridPlayer> list, GridPlayer to)
         {
             GridPlayer best = null;
             int bd = int.MaxValue;
-            foreach (var p in list) // strict < keeps first on ties
+            int bi = int.MaxValue;
+            foreach (var p in list) // ties broken by player-list order, not by candidate order
             {
                 int d = GridGeometry.Distance(p.Pos, to.Pos);
-                if (d < bd) { bd = d; best = p; }
+                int idx = IndexOf(m, p);
+                if (d < bd || (d == bd && idx < bi)) { bd = d; bi = idx; best = p; }
             }
             return best;
         }

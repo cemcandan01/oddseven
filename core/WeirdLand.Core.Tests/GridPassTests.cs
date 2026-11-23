@@ -104,6 +104,18 @@ namespace WeirdLand.Core.Tests
             Assert.That(m.UserHasBall, Is.False);
         }
 
+        [Test] public void Pass_Fail_EquidistantInterceptors_PlayerListOrderWins()
+        {
+            var m = Setup(new Cell(1, 1), new Cell(5, 5)); // line (2,2),(3,3),(4,4)
+            m.SetPos("kirmizi_cm", new Cell(2, 3)); // touches the line first, distance 3 to receiver
+            m.SetPos("kirmizi_lb", new Cell(4, 2)); // touches the line later, distance 3 to receiver
+            var ids = GridPass.Interceptors(m, P(m, "mavi_cm"), P(m, "mavi_st")).Select(p => p.Def.Id).ToList();
+            Assert.That(ids, Is.EqualTo(new[] { "kirmizi_cm", "kirmizi_lb" }));
+            m.PassRollOverride = _ => false;
+            m.Pass("mavi_st");
+            Assert.That(m.Carrier.Def.Id, Is.EqualTo("kirmizi_lb")); // lb precedes cm in player list
+        }
+
         [Test] public void Pass_Fail_NoCandidates_AdjacentToReceiverFirst()
         {
             var m = Setup(new Cell(1, 3), new Cell(4, 3));
