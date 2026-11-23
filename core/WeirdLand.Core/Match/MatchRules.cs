@@ -21,6 +21,19 @@ namespace WeirdLand.Core.Match
         public const int EnemyPowerBasePercent = 260;
         public const int TierPowerPercent = 0;
         public const int MatchMinutes = 90;
+        public const int GridWidth = 12;
+        public const int GridHeight = 8;
+        public const int GridMatchMoves = 90;
+        public const int StunMoves = 2;
+        public const int FastSpeed = 4;
+        public const double PassBase = 0.95;
+        public const double PassPerDistance = 0.04;
+        public const double PassPerStat = 0.03;
+        public const double PassPerInterceptor = 0.20;
+        public const double PassPerReceiverMarker = 0.10;
+        public const double PassMin = 0.05;
+        public const double PassMax = 0.95;
+        public const double ShiftFactor = 0.5;
 
         public static int TacticValue(Tactic t) => t == Tactic.Attacking ? TacticBonus : t == Tactic.Defensive ? -TacticBonus : 0;
 
