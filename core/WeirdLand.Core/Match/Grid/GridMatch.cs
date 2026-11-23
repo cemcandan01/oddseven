@@ -164,6 +164,22 @@ namespace WeirdLand.Core.Match
             return ev;
         }
 
+        // Opponent carrier acts on its own: greedy decision (spec 6.7), deterministic.
+        public IReadOnlyList<GameEvent> ResolveOpponentMove()
+        {
+            if (Phase != GridPhase.AwaitingAction)
+                throw new InvalidOperationException("ResolveOpponentMove requires Phase == AwaitingAction, was " + Phase);
+            if (UserHasBall)
+                throw new InvalidOperationException("ResolveOpponentMove requires the opponent to have the ball.");
+            var action = new Ai.GreedyGridPolicy().Decide(this, _rng);
+            switch (action)
+            {
+                case Ai.GridAdvance a: return Advance(a.To);
+                case Ai.GridPassTo a: return Pass(a.TargetId);
+                default: throw new InvalidOperationException("Opponent has no legal action.");
+            }
+        }
+
         // Move queue shared by Advance and (later) Pass: movement, duel check, then EndOfMove.
         private void RunMoveTail(List<GameEvent> ev)
         {

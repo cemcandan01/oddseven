@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using NUnit.Framework;
+using WeirdLand.Core.Ai;
 using WeirdLand.Core.Data;
 
 namespace WeirdLand.Core.Tests
@@ -61,5 +62,16 @@ namespace WeirdLand.Core.Tests
         [Test] public void Fingerprint_IsEightLowerHex() => Assert.That(EventLog.Fingerprint(new GameEvent[0]), Does.Match("^[0-9a-f]{8}$"));
 
         [Test] public void Golden_MatchFingerprint() => Assert.That(GoldenRun.Fingerprint(TestKit.RealData()), Is.EqualTo("3b407571"));
+
+        private static string GridFingerprint()
+        {
+            var m = TestKit.NewGridMatch(1);
+            var r = GridRunner.Play(m, new GreedyGridPolicy(), new GoodPolicy(), new Rng(1));
+            return EventLog.Fingerprint(r.Events);
+        }
+
+        [Test] public void Golden_GridMatchFingerprint() => Assert.That(GridFingerprint(), Is.EqualTo("7d8ace35"));
+
+        [Test] public void GridMatchFingerprint_SameSeedTwice_Equal() => Assert.That(GridFingerprint(), Is.EqualTo(GridFingerprint()));
     }
 }
