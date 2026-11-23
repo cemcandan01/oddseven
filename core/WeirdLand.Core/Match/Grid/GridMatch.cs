@@ -47,11 +47,24 @@ namespace WeirdLand.Core.Match
 
         public IReadOnlyList<GameEvent> Kickoff()
         {
-            foreach (var p in _players) p.Pos = GridGeometry.Home(p.Def.Slot, p.IsUser);
-            UserHasBall = _rng.Chance(0.5);
+            var ev = new List<GameEvent>();
+            Restart(_rng.Chance(0.5), ev);
+            return ev;
+        }
+
+        // Everyone home, stuns cleared, CM of the team with the ball carries.
+        private void Restart(bool userHasBall, List<GameEvent> ev)
+        {
+            foreach (var p in _players)
+            {
+                p.Pos = GridGeometry.Home(p.Def.Slot, p.IsUser);
+                p.Stun = 0;
+            }
+            _stunnedThisMove.Clear();
+            UserHasBall = userHasBall;
             Carrier = _players.Find(p => p.IsUser == UserHasBall && p.Def.Slot == Slot.CM);
             Phase = GridPhase.AwaitingAction;
-            return new List<GameEvent> { new GridKickoff(UserHasBall, Carrier.Def.Id) };
+            ev.Add(new GridKickoff(UserHasBall, Carrier.Def.Id));
         }
 
         public GridPlayer PlayerAt(Cell c)
@@ -159,12 +172,26 @@ namespace WeirdLand.Core.Match
             EndOfMove(ev);
         }
 
-        // End-of-move hook (Task 7 adds shot zone, Move++ and match end).
+        // End of a move: shot zone check, stun tick, move clock, match end.
         private void EndOfMove(List<GameEvent> ev)
         {
+            if (GridGeometry.InShotZone(Carrier.Pos, UserHasBall))
+            {
+                ev.Add(new ShotChance(UserHasBall, Carrier.Def.Id));
+                if (UserHasBall) UserScore++; else OppScore++;
+                Restart(!UserHasBall, ev);
+            }
             foreach (var p in _players)
                 if (p.Stun > 0 && !_stunnedThisMove.Contains(p.Def.Id)) p.Stun--;
             _stunnedThisMove.Clear();
+            Move++;
+            ev.Add(new MatchMoveAdvanced(Move));
+            if (Move >= MatchRules.GridMatchMoves)
+            {
+                ev.Add(new MatchEnded(UserScore, OppScore));
+                Phase = GridPhase.Ended;
+            }
+            else Phase = GridPhase.AwaitingAction;
         }
 
         private bool TryOpenDuel(List<GameEvent> ev)
@@ -223,7 +250,6 @@ namespace WeirdLand.Core.Match
                 if (TryOpenDuel(ev)) return ev;
             }
             EndOfMove(ev);
-            Phase = GridPhase.AwaitingAction;
             return ev;
         }
 
@@ -243,5 +269,7 @@ namespace WeirdLand.Core.Match
         }
 
         internal void SetPhase(GridPhase phase) => Phase = phase;
+
+        internal void SetMove(int move) => Move = move;
     }
 }
