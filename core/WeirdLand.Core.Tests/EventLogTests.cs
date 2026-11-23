@@ -60,6 +60,6 @@ namespace WeirdLand.Core.Tests
 
         [Test] public void Fingerprint_IsEightLowerHex() => Assert.That(EventLog.Fingerprint(new GameEvent[0]), Does.Match("^[0-9a-f]{8}$"));
 
-        [Test] public void Golden_MatchFingerprint() => Assert.That(GoldenRun.Fingerprint(TestKit.RealData()), Is.EqualTo("64f4ec8b"));
+        [Test] public void Golden_MatchFingerprint() => Assert.That(GoldenRun.Fingerprint(TestKit.RealData()), Is.EqualTo("3b407571"));
     }
 }
