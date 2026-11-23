@@ -107,9 +107,15 @@ namespace WeirdLand.Unity.Tests
         [UnityTest]
         public IEnumerator EndTurnOnly_TimeoutLineShown()
         {
-            // The striker survives three turns against the centre mid (the AppFlow default pairing), so the duel
-            // runs out of time; the first field slot (LB) gets tackled before that with every seed.
-            var (screen, duel) = TestRig.Create(ScenarioKind.FieldAttack, 1, Slot.ST);
+            // AppFlow's default pairing (ST vs CM), but with the enemy's power scaled to 30% through the existing
+            // DuelSetup.EnemyPowerScalePercent hook. Since the field cards became plain damage/block (68a1489) the
+            // CM tackles the ST down within three idle turns at 100% for every seed 1..300 with every user slot;
+            // at 30% the ST keeps full Kontrol for seeds 1..5, so the duel deterministically runs out of time.
+            var setup = DuelScenarios.BuildSetup(TestRig.Data.Game,
+                new DuelScenario("mavi", "kirmizi", ScenarioKind.FieldAttack, Slot.ST, Slot.CM));
+            setup.EnemyPowerScalePercent = 30;
+            var duel = new Duel(setup, new Rng(1));
+            var screen = TestRig.Open(duel, 1);
             for (int i = 0; i < 10 && !screen.ResultShown; i++)
             {
                 yield return TestRig.Idle(screen);

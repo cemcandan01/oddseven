@@ -18,7 +18,9 @@ usage() {
     exit 64
 }
 
-# True when a Unity editor process has this project open (matched on its command line).
+# True when a Unity process has this project open (matched on -projectpath <this project>). The Hub helper
+# ("unity.exe serve") has no -projectpath, so it never matches. Batch jobs on this project do match on purpose:
+# Unity refuses a second instance on the same project anyway, so stopping here just gives a clearer message.
 editor_running() {
     local proj
     proj="$(winpath "$PROJECT" | tr '\134' '/' | tr '[:upper:]' '[:lower:]')"
@@ -26,7 +28,7 @@ editor_running() {
     powershell.exe -NoProfile -Command \
         "Get-CimInstance Win32_Process -Filter \"Name='Unity.exe'\" | ForEach-Object { \$_.CommandLine }" 2>/dev/null \
         | tr '\134' '/' | tr '[:upper:]' '[:lower:]' \
-        | grep -v -- "-batchmode" | grep -- "-projectpath" | grep -qF "$proj"
+        | grep -- "-projectpath" | grep -qF "$proj"
 }
 
 preflight() {

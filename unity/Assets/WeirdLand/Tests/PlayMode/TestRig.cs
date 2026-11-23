@@ -47,6 +47,17 @@ namespace WeirdLand.Unity.Tests
             return (screen, duel);
         }
 
+        /// <summary>Opens an already built (not begun) duel on a fresh rig screen.</summary>
+        public static DuelScreen Open(Duel duel, uint seed)
+        {
+            var canvas = CreateCanvas();
+            var go = new GameObject("DuelScreen", typeof(RectTransform));
+            go.transform.SetParent(canvas.transform, false);
+            var screen = go.AddComponent<DuelScreen>();
+            screen.Open(duel, Data, seed);
+            return screen;
+        }
+
         /// <summary>A grid match, mavi vs kirmizi, on a fresh rig canvas; kickoff starts playing at once.</summary>
         public static GridMatchController CreateGrid(uint seed)
         {
