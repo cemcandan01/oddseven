@@ -105,6 +105,7 @@ namespace WeirdLand.Core.Match
         // duel check, shot zone and move clock.
         private void RunMoveTail(List<GameEvent> ev)
         {
+            GridMovement.Step(this, ev);
         }
 
         internal void SetPos(string playerId, Cell c) => _players.Find(p => p.Def.Id == playerId).Pos = c;

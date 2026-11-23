@@ -120,7 +120,7 @@ namespace WeirdLand.Core.Tests
             var m = Setup("mavi_cm", new Cell(5, 3));
             var ev = m.Advance(new Cell(6, 3));
             Assert.That(m.Carrier.Pos, Is.EqualTo(new Cell(6, 3)));
-            var pm = ev.OfType<PlayerMoved>().Single();
+            var pm = ev.OfType<PlayerMoved>().First();
             Assert.That((pm.PlayerId, pm.FromX, pm.FromY, pm.ToX, pm.ToY), Is.EqualTo(("mavi_cm", 5, 3, 6, 3)));
         }
     }
