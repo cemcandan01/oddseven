@@ -11,11 +11,11 @@ Kurgu oturana kadar saha düellosu kartları sadeleştirildi. 30 saha kartının
 
 **Değer cetveli** (ilk denemede hasar değerleri 2 düşüktü, aşağıdaki ilk denemeye bakın):
 
-| Maliyet | Hasar (sıradan / nadir+) | Blok |
+| Maliyet | Hasar | Blok |
 |---|---|---|
 | 0 | - | 4 |
-| 1 | 7–8 / 9 | 5–7 |
-| 2 | 12–14 / 15–16 | 12 |
+| 1 | 7–9 | 5–7 |
+| 2 | 12–16 | 12 |
 | 3 | - | 17 |
 
 ## Ölçüm: tek düello, saha hücumu, GoodPolicy, 2000 seed
