@@ -126,7 +126,9 @@ namespace WeirdLand.Core.Tests
                 }
                 return log;
             };
-            Assert.That(run(), Is.EqualTo(run()));
+            var first = run();
+            Assert.That(first, Is.Not.Empty);
+            Assert.That(first, Is.EqualTo(run()));
         }
     }
 }

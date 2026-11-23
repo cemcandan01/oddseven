@@ -82,7 +82,6 @@ public static class SimReport
                         bool attackerWon = de.Outcome == DuelOutcome.AttackerWon;
                         if (userAttacking.Value) { atkDuels++; if (!attackerWon) atkWon++; }
                         else { defDuels++; if (!attackerWon) defWon++; }
-                       
                         userAttacking = null;
                         break;
                 }
