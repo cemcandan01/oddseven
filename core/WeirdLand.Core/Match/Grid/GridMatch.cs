@@ -104,6 +104,53 @@ namespace WeirdLand.Core.Match
             return ev;
         }
 
+        internal Func<double, bool> PassRollOverride; // test hook, null in production
+
+        public IReadOnlyList<GridPlayer> PassTargets()
+        {
+            var r = new List<GridPlayer>();
+            if (Carrier == null) return r;
+            foreach (var p in _players)
+                if (p.IsUser == Carrier.IsUser && p != Carrier && p.Def.Slot != Slot.GK) r.Add(p);
+            return r;
+        }
+
+        // Visual hint only; the chance itself is never exposed.
+        public bool PassLineContested(string targetId)
+            => GridPass.Interceptors(this, Carrier, FindPassTarget(targetId)).Count > 0;
+
+        private GridPlayer FindPassTarget(string targetId)
+        {
+            foreach (var p in PassTargets()) if (p.Def.Id == targetId) return p;
+            throw new ArgumentException("Invalid pass target " + targetId, nameof(targetId));
+        }
+
+        public IReadOnlyList<GameEvent> Pass(string targetId)
+        {
+            if (Phase != GridPhase.AwaitingAction)
+                throw new InvalidOperationException("Pass requires Phase == AwaitingAction, was " + Phase);
+            var to = FindPassTarget(targetId);
+            var from = Carrier;
+            double chance = GridPass.Chance(this, from, to);
+            bool ok = PassRollOverride != null ? PassRollOverride(chance) : _rng.Chance(chance);
+            var ev = new List<GameEvent>();
+            if (ok)
+            {
+                ev.Add(new BallPassed(from.Def.Id, to.Def.Id));
+                Carrier = to;
+            }
+            else
+            {
+                var thief = GridPass.PickInterceptor(this, from, to);
+                ev.Add(new PassIntercepted(from.Def.Id, to.Def.Id, thief.Def.Id));
+                Carrier = thief;
+                UserHasBall = thief.IsUser;
+                ev.Add(new PossessionChanged(UserHasBall, thief.Def.Id));
+            }
+            RunMoveTail(ev);
+            return ev;
+        }
+
         // Move queue shared by Advance and (later) Pass: movement, duel check, then EndOfMove.
         private void RunMoveTail(List<GameEvent> ev)
         {
