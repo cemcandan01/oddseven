@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using NUnit.Framework;
 using WeirdLand.Core.Data;
@@ -46,6 +47,81 @@ namespace WeirdLand.Core.Tests
             var m = TestKit.NewGridMatch(1); m.Kickoff();
             Assert.That(m.PlayerAt(GridGeometry.Home(Slot.GK, true)).Def.Slot, Is.EqualTo(Slot.GK));
             Assert.That(m.PlayerAt(new Cell(1, 0)), Is.Null);
+        }
+
+        // mavi_cm speed 3 (slow), mavi_rw speed 4 (fast); mavi is the user team.
+        private static GridMatch Setup(string carrierId, Cell at)
+        {
+            var m = TestKit.NewGridMatch(seed: 1); m.Kickoff();
+            // park everyone far away on distinct cells so tests control the neighbourhood
+            int i = 0;
+            foreach (var p in m.Players) m.SetPos(p.Def.Id, new Cell(9 + (i / 8), i++ % 8));
+            m.SetCarrier(carrierId);
+            m.SetPos(carrierId, at);
+            return m;
+        }
+
+        [Test] public void Reachable_SlowCarrier_OnlyDistance1()
+        {
+            var m = Setup("mavi_cm", new Cell(5, 3));
+            var r = m.ReachableCells();
+            Assert.That(r, Is.Not.Empty);
+            Assert.That(r.All(c => GridGeometry.Distance(c, m.Carrier.Pos) == 1), Is.True);
+        }
+
+        [Test] public void Reachable_FastCarrier_IncludesDistance2()
+        {
+            var m = Setup("mavi_rw", new Cell(5, 3));
+            Assert.That(m.ReachableCells().Any(c => GridGeometry.Distance(c, m.Carrier.Pos) == 2), Is.True);
+        }
+
+        [Test] public void Reachable_SortedByXThenY()
+        {
+            var m = Setup("mavi_rw", new Cell(5, 3));
+            var r = m.ReachableCells();
+            Assert.That(r, Is.EqualTo(r.OrderBy(c => c.X).ThenBy(c => c.Y).ToList()));
+        }
+
+        [Test] public void Reachable_CannotHopOverOpponentWall()
+        {
+            var m = Setup("mavi_rw", new Cell(5, 3));
+            m.SetPos("kirmizi_cm", new Cell(6, 2));
+            m.SetPos("kirmizi_lb", new Cell(6, 3));
+            m.SetPos("kirmizi_rb", new Cell(6, 4));
+            Assert.That(m.ReachableCells().Contains(new Cell(7, 3)), Is.False);
+        }
+
+        [Test] public void Reachable_AllNeighboursOccupied_ReturnsEmpty()
+        {
+            var m = Setup("mavi_rw", new Cell(5, 3));
+            var ids = new[] { "kirmizi_gk", "kirmizi_lb", "kirmizi_rb", "kirmizi_cm", "kirmizi_lw", "kirmizi_rw", "kirmizi_st", "mavi_gk" };
+            int k = 0;
+            for (int dx = -1; dx <= 1; dx++)
+                for (int dy = -1; dy <= 1; dy++)
+                    if (dx != 0 || dy != 0) m.SetPos(ids[k++], new Cell(5 + dx, 3 + dy));
+            Assert.That(m.ReachableCells(), Is.Empty);
+        }
+
+        [Test] public void Advance_ToUnreachableCell_Throws()
+        {
+            var m = Setup("mavi_cm", new Cell(5, 3));
+            Assert.Throws<ArgumentException>(() => m.Advance(new Cell(8, 3)));
+        }
+
+        [Test] public void Advance_WhenNotAwaitingAction_Throws()
+        {
+            var m = Setup("mavi_cm", new Cell(5, 3));
+            m.SetPhase(GridPhase.Ended);
+            Assert.Throws<InvalidOperationException>(() => m.Advance(new Cell(6, 3)));
+        }
+
+        [Test] public void Advance_MovesCarrier_EmitsPlayerMoved()
+        {
+            var m = Setup("mavi_cm", new Cell(5, 3));
+            var ev = m.Advance(new Cell(6, 3));
+            Assert.That(m.Carrier.Pos, Is.EqualTo(new Cell(6, 3)));
+            var pm = ev.OfType<PlayerMoved>().Single();
+            Assert.That((pm.PlayerId, pm.FromX, pm.FromY, pm.ToX, pm.ToY), Is.EqualTo(("mavi_cm", 5, 3, 6, 3)));
         }
     }
 }
