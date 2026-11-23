@@ -19,7 +19,7 @@ namespace WeirdLand.Unity.Tests
         [Test]
         public void Golden_MatchFingerprint_MatchesDotnet()
             => Assert.That(GoldenRun.Fingerprint(GameDataProvider.Load(GameDataProvider.DataDirectory()).Game),
-                Is.EqualTo("d16f21d2"));
+                Is.EqualTo("64f4ec8b"));
 
         [Test]
         public void Load_MissingDirectory_ThrowsDataExceptionNamingPath()

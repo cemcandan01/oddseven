@@ -17,6 +17,25 @@ namespace WeirdLand.Core.Tests
         }
 
         [Test]
+        public void RealData_EveryFieldPlayerHasDamageCardInBothRoles()
+        {
+            var gd = Load();
+            var missing = new System.Collections.Generic.List<string>();
+            foreach (var team in gd.Teams.Values)
+                foreach (var p in team.Players)
+                {
+                    if (p.Slot == Slot.GK) continue;
+                    foreach (var attacking in new[] { true, false })
+                    {
+                        bool has = p.Deck.Select(gd.Card).Any(c => c.UsableWhen(attacking)
+                            && c.Effects.Any(e => e.Type == EffectType.Damage));
+                        if (!has) missing.Add(p.Id + (attacking ? " (hucum)" : " (savunma)"));
+                    }
+                }
+            Assert.That(missing, Is.Empty, string.Join(", ", missing));
+        }
+
+        [Test]
         public void RealData_HasAtLeast40Cards()
         {
             Assert.That(Load().Cards.Count, Is.GreaterThanOrEqualTo(40));
