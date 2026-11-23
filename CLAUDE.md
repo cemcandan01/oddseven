@@ -16,6 +16,7 @@ Futbol temalı, sıra tabanlı deckbuilder roguelike. Slay the Spire'ın futbol 
 - Test: `dotnet test`
 - Derleme: `dotnet build`
 - Simülasyon: `dotnet run --project WeirdLand.Sim -- --matches 1000 --seed 1 --policy good --opp all`
+- Izgara modu: `dotnet run --project WeirdLand.Sim -- --mode grid --matches 1000 --seed 1 --policy good --opp all`
 
 ## Çekirdek kuralları (WeirdLand.Core)
 - `netstandard2.1`, `LangVersion 9.0`. Unity 6 uyumu için C# 10+ özelliklerini kullanma: file-scoped namespace, global using, record struct, `required` yok.

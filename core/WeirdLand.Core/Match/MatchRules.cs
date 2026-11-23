@@ -23,7 +23,7 @@ namespace WeirdLand.Core.Match
         public const int MatchMinutes = 90;
         public const int GridWidth = 12;
         public const int GridHeight = 8;
-        public const int GridMatchMoves = 90;
+        public const int GridMatchMoves = 25;
         public const int StunMoves = 2;
         public const int FastSpeed = 4;
         public const double PassBase = 0.95;

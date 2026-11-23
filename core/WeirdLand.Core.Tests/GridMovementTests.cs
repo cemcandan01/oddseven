@@ -115,7 +115,7 @@ namespace WeirdLand.Core.Tests
             {
                 var log = new List<string>();
                 var m = TestKit.NewGridMatch(7); m.Kickoff();
-                for (int i = 0; i < 30; i++)
+                for (int i = 0; i < 30 && m.Phase != GridPhase.Ended; i++)
                 {
                     var r = m.ReachableCells();
                     if (r.Count == 0) break;

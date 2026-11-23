@@ -6,12 +6,12 @@ using WeirdLand.Core.Match;
 using WeirdLand.Sim;
 
 const string Usage =
-    "Kullanım: dotnet run --project WeirdLand.Sim -- [--matches N] [--seed S] [--policy good|random] [--user ID] [--opp ID|all] [--data DIR]\n" +
-    "Varsayılanlar: --matches 1000 --seed 1 --policy good --user mavi --opp kirmizi --data ../data";
+    "Kullanım: dotnet run --project WeirdLand.Sim -- [--matches N] [--seed S] [--mode classic|grid] [--policy good|random] [--user ID] [--opp ID|all] [--data DIR]\n" +
+    "Varsayılanlar: --matches 1000 --seed 1 --mode classic --policy good --user mavi --opp kirmizi --data ../data";
 
 int matches = 1000;
 uint seed = 1;
-string policyName = "good", userId = "mavi", oppId = "kirmizi", dataDir = "../data";
+string policyName = "good", modeName = "classic", userId = "mavi", oppId = "kirmizi", dataDir = "../data";
 
 for (int i = 0; i < args.Length; i += 2)
 {
@@ -24,6 +24,10 @@ for (int i = 0; i < args.Length; i += 2)
             break;
         case "--seed":
             if (!uint.TryParse(v, NumberStyles.None, CultureInfo.InvariantCulture, out seed)) return Fail();
+            break;
+        case "--mode":
+            if (v != "classic" && v != "grid") return Fail();
+            modeName = v;
             break;
         case "--policy":
             if (v != "good" && v != "random") return Fail();
@@ -74,6 +78,23 @@ Console.OutputEncoding = new System.Text.UTF8Encoding(false);
 bool first = true;
 foreach (var opp in opponents)
 {
+    if (modeName == "grid")
+    {
+        var gridResults = new List<GridResult>();
+        var userIds = new HashSet<string>(user.Players.Select(pl => pl.Id), StringComparer.Ordinal);
+        for (int i = 0; i < matches; i++)
+        {
+            uint s = unchecked(seed + (uint)i);
+            var gm = new GridMatch(data, user, opp, s);
+            IGridPolicy gp = policyName == "good" ? new GreedyGridPolicy() : new RandomGridPolicy();
+            gridResults.Add(GridRunner.Play(gm, gp, policy, new Rng(s ^ 0x5bd1e995u)));
+        }
+        if (!first) Console.WriteLine();
+        first = false;
+        foreach (var line in SimReport.BuildGrid(user.Id, opp.Id, policyName, seed, gridResults, userIds))
+            Console.WriteLine(line);
+        continue;
+    }
     var results = new List<MatchResult>();
     for (int i = 0; i < matches; i++)
     {
