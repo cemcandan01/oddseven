@@ -15,7 +15,7 @@ namespace WeirdLand.Core.Match
             for (int i = 1; i < line.Count - 1; i++)
                 foreach (var p in m.Players)
                 {
-                    if (p.IsUser == from.IsUser || p.Def.Slot == Slot.GK || result.Contains(p)) continue;
+                    if (p.IsUser == from.IsUser || p.Def.Slot == Slot.GK || p.Stun > 0 || result.Contains(p)) continue;
                     if (GridGeometry.Distance(p.Pos, line[i]) <= 1) result.Add(p);
                 }
             return result;
@@ -25,7 +25,7 @@ namespace WeirdLand.Core.Match
         {
             int n = 0;
             foreach (var p in m.Players)
-                if (p.IsUser != from.IsUser && p.Def.Slot != Slot.GK && GridGeometry.Adjacent(p.Pos, to.Pos)) n++;
+                if (p.IsUser != from.IsUser && p.Def.Slot != Slot.GK && p.Stun == 0 && GridGeometry.Adjacent(p.Pos, to.Pos)) n++;
             return n;
         }
 
@@ -44,7 +44,9 @@ namespace WeirdLand.Core.Match
         {
             var cands = Interceptors(m, from, to);
             if (cands.Count > 0) return Nearest(m, cands, to);
+            // Stunned players have fallen: prefer standing field players, then any field player, then anyone.
             var adj = new List<GridPlayer>();
+            var standing = new List<GridPlayer>();
             var field = new List<GridPlayer>();
             var any = new List<GridPlayer>();
             foreach (var p in m.Players)
@@ -53,9 +55,12 @@ namespace WeirdLand.Core.Match
                 any.Add(p);
                 if (p.Def.Slot == Slot.GK) continue;
                 field.Add(p);
+                if (p.Stun > 0) continue;
+                standing.Add(p);
                 if (GridGeometry.Adjacent(p.Pos, to.Pos)) adj.Add(p);
             }
             if (adj.Count > 0) return Nearest(m, adj, to);
+            if (standing.Count > 0) return Nearest(m, standing, to);
             return Nearest(m, field.Count > 0 ? field : any, to);
         }
 

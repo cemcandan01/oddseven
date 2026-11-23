@@ -53,6 +53,39 @@ namespace WeirdLand.Core.Tests
             Assert.That(open - marked, Is.EqualTo(0.10).Within(1e-9));
         }
 
+        [Test] public void Stunned_Opponent_IsNotInterceptor_AndNotCounted()
+        {
+            var m = Setup(new Cell(1, 3), new Cell(7, 3));
+            double open = GridPass.Chance(m, P(m, "mavi_cm"), P(m, "mavi_st"));
+            m.SetPos("kirmizi_cm", new Cell(4, 3));
+            P(m, "kirmizi_cm").Stun = 2;
+            Assert.That(GridPass.Interceptors(m, P(m, "mavi_cm"), P(m, "mavi_st")), Is.Empty);
+            Assert.That(GridPass.Chance(m, P(m, "mavi_cm"), P(m, "mavi_st")), Is.EqualTo(open).Within(1e-9));
+        }
+
+        [Test] public void Stunned_Marker_NotCounted()
+        {
+            var m = Setup(new Cell(1, 3), new Cell(7, 3));
+            double open = GridPass.Chance(m, P(m, "mavi_cm"), P(m, "mavi_st"));
+            m.SetPos("kirmizi_cm", new Cell(8, 3));
+            P(m, "kirmizi_cm").Stun = 1;
+            Assert.That(GridPass.Chance(m, P(m, "mavi_cm"), P(m, "mavi_st")), Is.EqualTo(open).Within(1e-9));
+        }
+
+        [Test] public void PassFail_PrefersNonStunnedInterceptorFallback()
+        {
+            var m = Setup(new Cell(1, 3), new Cell(7, 3));
+            // stunned kirmizi_cm is nearest to the receiver; standing kirmizi_lb is farther, not adjacent.
+            m.SetPos("kirmizi_cm", new Cell(8, 3));
+            P(m, "kirmizi_cm").Stun = 2;
+            m.SetPos("kirmizi_lb", new Cell(9, 6));
+            Assert.That(GridPass.Interceptors(m, P(m, "mavi_cm"), P(m, "mavi_st")), Is.Empty);
+            Assert.That(GridPass.PickInterceptor(m, P(m, "mavi_cm"), P(m, "mavi_st")).Def.Id, Is.Not.EqualTo("kirmizi_cm"));
+            // with every field opponent stunned, fall back to a stunned non-keeper (never the keeper)
+            foreach (var p in m.Players) if (!p.IsUser) p.Stun = 2;
+            Assert.That(GridPass.PickInterceptor(m, P(m, "mavi_cm"), P(m, "mavi_st")).Def.Slot, Is.Not.EqualTo(Slot.GK));
+        }
+
         [Test] public void Chance_ClampedTo005()
         {
             var m = Setup(new Cell(1, 3), new Cell(7, 3));

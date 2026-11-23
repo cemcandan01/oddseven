@@ -70,7 +70,7 @@ namespace WeirdLand.Core.Tests
             return EventLog.Fingerprint(r.Events);
         }
 
-        [Test] public void Golden_GridMatchFingerprint() => Assert.That(GridFingerprint(), Is.EqualTo("7d8ace35"));
+        [Test] public void Golden_GridMatchFingerprint() => Assert.That(GridFingerprint(), Is.EqualTo("21123685"));
 
         [Test] public void GridMatchFingerprint_SameSeedTwice_Equal() => Assert.That(GridFingerprint(), Is.EqualTo(GridFingerprint()));
     }
