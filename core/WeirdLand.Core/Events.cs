@@ -26,4 +26,13 @@ namespace WeirdLand.Core
     public record KondisyonChanged(string PlayerId, int Value) : GameEvent;
     public record HalfTime() : GameEvent;
     public record MatchEnded(int UserScore, int OppScore) : GameEvent;
+    public record GridKickoff(bool UserHasBall, string CarrierId) : GameEvent;
+    public record PlayerMoved(string PlayerId, int FromX, int FromY, int ToX, int ToY) : GameEvent;
+    public record BallPassed(string FromId, string ToId) : GameEvent;
+    public record PassIntercepted(string FromId, string IntendedId, string InterceptorId) : GameEvent;
+    public record DuelTriggered(string CarrierId, string DefenderId) : GameEvent;
+    public record PlayerStunned(string PlayerId, int Moves) : GameEvent;
+    public record PossessionChanged(bool UserHasBall, string CarrierId) : GameEvent;
+    public record ShotChance(bool ByUser, string PlayerId) : GameEvent;
+    public record MatchMoveAdvanced(int Move) : GameEvent;
 }

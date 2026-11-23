@@ -72,6 +72,12 @@ namespace WeirdLand.Core.Tests
         /// <summary>Loads the shared game data.</summary>
         public static GameData RealData() => DataLoader.Load(RealDataDir());
 
+        public static Match.GridMatch NewGridMatch(uint seed)
+        {
+            var d = RealData();
+            return new Match.GridMatch(d, d.Team("mavi"), d.Team("kirmizi"), seed);
+        }
+
         public static string CardsJson(params object[] cards)
             => JsonConvert.SerializeObject(new { schemaVersion = 1, cards });
 
