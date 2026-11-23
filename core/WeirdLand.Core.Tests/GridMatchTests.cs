@@ -88,7 +88,7 @@ namespace WeirdLand.Core.Tests
             m.SetPos("kirmizi_cm", new Cell(6, 2));
             m.SetPos("kirmizi_lb", new Cell(6, 3));
             m.SetPos("kirmizi_rb", new Cell(6, 4));
-            Assert.That(m.ReachableCells().Contains(new Cell(9, 3)), Is.False);
+            Assert.That(m.ReachableCells().Contains(new Cell(7, 3)), Is.False);
         }
 
         [Test] public void Reachable_AllNeighboursOccupied_ReturnsEmpty()
@@ -105,7 +105,7 @@ namespace WeirdLand.Core.Tests
         [Test] public void Advance_ToUnreachableCell_Throws()
         {
             var m = Setup("mavi_cm", new Cell(5, 3));
-            Assert.Throws<ArgumentException>(() => m.Advance(new Cell(10, 3)));
+            Assert.Throws<ArgumentException>(() => m.Advance(new Cell(8, 3)));
         }
 
         [Test] public void Advance_WhenNotAwaitingAction_Throws()
@@ -123,8 +123,7 @@ namespace WeirdLand.Core.Tests
             var pm = ev.OfType<PlayerMoved>().First();
             Assert.That((pm.PlayerId, pm.FromX, pm.FromY, pm.ToX, pm.ToY), Is.EqualTo(("mavi_cm", 5, 3, 6, 3)));
         }
-    
-        // user parked at x=3, opponents parked at x=0 (clear of both shot zones' interiors for the tests)
+        // user parked at x=3, opponents at x=0 (x=0 is inside the opponent shot zone, harmless: only the carrier is checked)
         private static GridMatch ZoneSetup(string carrierId, Cell at)
         {
             var m = TestKit.NewGridMatch(seed: 1); m.Kickoff();
